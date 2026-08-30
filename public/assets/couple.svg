@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">Cute couple with flowers</title>
+  <desc id="desc">A soft pink romantic illustration of two smiling people surrounded by roses and hearts.</desc>
+  <rect width="220" height="220" rx="110" fill="#fff5f8"/>
+  <g fill="#ff8baa" opacity=".75">
+    <path d="M109 38c7-12 24-2 14 11l-14 16-14-16c-10-13 7-23 14-11z"/>
+    <circle cx="43" cy="60" r="5"/>
+    <circle cx="178" cy="57" r="4"/>
+    <circle cx="191" cy="91" r="5"/>
+  </g>
+  <g transform="translate(34 42)">
+    <g transform="translate(0 94)" fill="#ee7598">
+      <circle cx="18" cy="24" r="17"/>
+      <circle cx="43" cy="35" r="20"/>
+      <circle cx="75" cy="31" r="17"/>
+      <circle cx="111" cy="35" r="20"/>
+      <circle cx="138" cy="23" r="17"/>
+    </g>
+    <g transform="translate(43 38)">
+      <path d="M35 14c-22 5-31 32-22 56 6 17 20 25 34 24 16-1 28-13 30-31 4-29-16-55-42-49z" fill="#5b2a22"/>
+      <path d="M78 18c-23 1-36 25-31 50 4 19 17 31 33 32 16 1 31-10 36-29 8-29-11-54-38-53z" fill="#5b2a22"/>
+      <circle cx="41" cy="58" r="29" fill="#ffd8d1"/>
+      <circle cx="85" cy="60" r="29" fill="#ffd8d1"/>
+      <path d="M16 43c9-25 44-33 57-5-15-10-38-9-57 5z" fill="#4d201b"/>
+      <path d="M62 42c15-22 48-21 59 2-18-9-38-9-59-2z" fill="#4d201b"/>
+      <circle cx="31" cy="60" r="4" fill="#2f1613"/>
+      <circle cx="50" cy="60" r="4" fill="#2f1613"/>
+      <circle cx="75" cy="62" r="4" fill="#2f1613"/>
+      <circle cx="95" cy="62" r="4" fill="#2f1613"/>
+      <path d="M34 74c6 6 14 6 20 0" fill="none" stroke="#a24051" stroke-width="4" stroke-linecap="round"/>
+      <path d="M78 76c7 6 15 6 22-1" fill="none" stroke="#a24051" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="21" cy="69" r="6" fill="#ff9aae" opacity=".8"/>
+      <circle cx="108" cy="71" r="6" fill="#ff9aae" opacity=".8"/>
+      <path d="M34 95c18 16 43 16 62 0 17 5 30 21 31 42H4c1-22 13-37 30-42z" fill="#f384a2"/>
+    </g>
+    <g fill="#ff6f98">
+      <path d="M22 78c9-13 26 0 15 12L23 105 9 90C-2 78 13 65 22 78z"/>
+      <path d="M151 79c9-13 26 0 15 12l-14 15-14-15c-11-12 4-25 13-12z"/>
+      <path d="M118 20c5-8 16-1 10 8l-10 11-10-11c-6-9 5-16 10-8z"/>
+    </g>
+  </g>
+</svg>

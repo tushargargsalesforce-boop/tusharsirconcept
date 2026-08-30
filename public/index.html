@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will You Go On A Date?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="petal-field" aria-hidden="true"></div>
+
+  <header class="chat-topbar">
+    <div class="chat-brand">
+      <span class="brand-mark">♡</span>
+      <span class="brand-name">lovegle</span>
+      <strong>Talk to strangers!</strong>
+    </div>
+    <button class="online-counter" id="onlineCounter" type="button">0 online now</button>
+  </header>
+
+  <aside class="online-panel" id="onlinePanel" aria-hidden="true">
+    <div class="online-panel-head">
+      <strong>Online People</strong>
+      <button id="closeOnlinePanel" type="button" aria-label="Close online stats">×</button>
+    </div>
+    <div class="online-total" id="onlineTotal">0 online now</div>
+    <h3>Country wise</h3>
+    <div class="stats-list" id="countryStats"></div>
+    <h3>State wise</h3>
+    <div class="stats-list" id="stateStats"></div>
+  </aside>
+
+  <main class="app-shell">
+    <section class="screen active" data-screen="invite">
+      <div class="panel invitation-panel">
+        <h1>🌸 Will you go on a date with me? 🌸</h1>
+        <img class="couple-art" src="assets/couple.svg" alt="Cute romantic couple illustration">
+        <p class="tiny-note">(no pressure, okay, a little pressure.)</p>
+        <button class="primary-btn" id="yesBtn" type="button">YES 💕</button>
+        <button class="secondary-btn runaway" id="noBtn" type="button">NO 😏</button>
+        <p class="error-message" id="inviteError"></p>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="yes">
+      <div class="panel">
+        <h2>WAIT... YOU ACTUALLY SAID YES?? 🥹</h2>
+        <p>I was so ready for you to say no 😭</p>
+        <div class="heart-row">💗 💗 💗</div>
+        <button class="primary-btn" data-next="date" type="button">okay okay! →</button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="date">
+      <div class="panel form-panel">
+        <h2>So... when are you free? 🥺</h2>
+        <label for="dateInput">Pick a Day 🗓️</label>
+        <input id="dateInput" type="date">
+        <label for="timeInput">What Time? ⏰</label>
+        <select id="timeInput">
+          <option value="">choose a time...</option>
+          <option value="17:00">5:00 PM</option>
+          <option value="18:00">6:00 PM</option>
+          <option value="19:00">7:00 PM</option>
+          <option value="20:00">8:00 PM</option>
+        </select>
+        <button class="primary-btn" id="saveDateBtn" type="button">set the date! 💗</button>
+        <p class="error-message" id="dateError"></p>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="food">
+      <div class="panel food-panel">
+        <h2>What are we feeling? 🍽️✨</h2>
+        <p>pick your vibe</p>
+        <div class="food-grid" id="foodGrid">
+          <button class="food-card" data-food="Pizza" type="button"><span>🍕</span>Pizza</button>
+          <button class="food-card" data-food="Sushi" type="button"><span>🍣</span>Sushi</button>
+          <button class="food-card" data-food="Burgers" type="button"><span>🍔</span>Burgers</button>
+          <button class="food-card" data-food="Pasta" type="button"><span>🍝</span>Pasta</button>
+          <button class="food-card" data-food="Tacos" type="button"><span>🌮</span>Tacos</button>
+          <button class="food-card" data-food="Ramen" type="button"><span>🍜</span>Ramen</button>
+        </div>
+        <button class="primary-btn" id="saveFoodBtn" type="button">that's the vibe →</button>
+        <p class="error-message" id="foodError"></p>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="location">
+      <div class="panel location-panel">
+        <h2>Find nearby maybes 💞</h2>
+        <p class="tiny-note">Country → state → district → town. Matches stay within a 10 km radius and exact locations stay private.</p>
+        <div class="select-stack">
+          <label for="countrySelect">Country</label>
+          <select id="countrySelect"></select>
+          <label for="stateSelect">State</label>
+          <select id="stateSelect" disabled></select>
+          <label for="districtSelect">District</label>
+          <select id="districtSelect" disabled></select>
+          <label for="townSelect">Town</label>
+          <select id="townSelect" disabled></select>
+        </div>
+        <div class="radius-control">
+          <span>Search diameter</span>
+          <strong>10 km</strong>
+        </div>
+        <div class="approx-map" id="approxMap" aria-label="Approximate nearby match map">
+          <div class="map-ring"></div>
+          <div class="map-pin user-pin">You</div>
+        </div>
+        <button class="primary-btn" id="saveLocationBtn" type="button">show nearby matches 💘</button>
+        <p class="error-message" id="locationError"></p>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="matches">
+      <div class="panel match-panel">
+        <h2>Soft matches around you 💌</h2>
+        <p class="tiny-note">Only accepted profiles appear. Details are intentionally limited.</p>
+        <div class="match-list" id="matchList"></div>
+        <button class="primary-btn" data-next="final" type="button">continue →</button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="final">
+      <div class="panel">
+        <h2>glad you didn't say no. be ready by 6, I'm coming to get you 🚗</h2>
+        <p><em>P.S. normal people text. I made a whole website for you. no big deal. 😌</em></p>
+        <div class="heart-row">♥ ♥ ♥ ♥ ♥</div>
+        <button class="primary-btn" id="acceptBtn" type="button">ok I accept 🥰</button>
+        <button class="secondary-btn wide-secondary" data-next="stranger-chat" type="button">random live chat 💬</button>
+        <p class="error-message" id="acceptError"></p>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="stranger-chat">
+      <div class="panel chat-panel">
+        <h2>Stranger live chat 💬</h2>
+        <div class="mode-tabs" role="group" aria-label="Chat mode">
+          <button class="mode-tab active" id="textModeBtn" type="button">Text Chat</button>
+          <button class="mode-tab" id="videoModeBtn" type="button">Video Chat</button>
+        </div>
+        <p class="tiny-note">Text chat and optional video with a random person. Keep it kind and do not share private details.</p>
+        <div class="chat-status" id="chatStatus">Not connected</div>
+        <div class="video-grid">
+          <video id="localVideo" muted playsinline></video>
+          <video id="remoteVideo" playsinline autoplay></video>
+        </div>
+        <div class="chat-actions">
+          <button class="primary-btn compact-btn" id="findChatBtn" type="button">find person</button>
+          <button class="secondary-btn compact-btn" id="videoChatBtn" type="button" disabled>start video</button>
+          <button class="secondary-btn compact-btn" id="leaveChatBtn" type="button" disabled>leave</button>
+        </div>
+        <div class="messages" id="messages"></div>
+        <form class="message-form" id="messageForm">
+          <input id="messageInput" type="text" maxlength="1000" placeholder="type a sweet message..." autocomplete="off" disabled>
+          <button class="primary-btn send-btn" type="submit" disabled>send</button>
+        </form>
+        <p class="error-message" id="chatError"></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
