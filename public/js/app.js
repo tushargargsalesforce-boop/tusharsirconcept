@@ -55,6 +55,8 @@ let peerConnection = null;
 let localStream = null;
 let videoStarted = false;
 let chatMode = "text";
+let chatAccessApproved = false;
+let chatSearchInProgress = false;
 
 function getVisitorId() {
   const existing = localStorage.getItem("dating_visitor_id");
@@ -244,7 +246,9 @@ function setChatEnabled(enabled) {
   document.getElementById("messageInput").disabled = !enabled;
   document.querySelector(".send-btn").disabled = !enabled;
   document.getElementById("videoChatBtn").disabled = !enabled || chatMode !== "video";
+  document.getElementById("skipChatBtn").disabled = !chatRoomToken || chatSearchInProgress;
   document.getElementById("leaveChatBtn").disabled = !chatRoomToken;
+  document.getElementById("findChatBtn").disabled = !chatAccessApproved || chatSearchInProgress;
 }
 
 function addMessageBubble(message) {
@@ -274,6 +278,7 @@ function resetChatUi() {
   lastMessageId = 0;
   lastSignalId = 0;
   videoStarted = false;
+  chatSearchInProgress = false;
   setChatEnabled(false);
   setChatStatus("Not connected");
   document.getElementById("messages").innerHTML = "";
@@ -320,6 +325,79 @@ async function pollChatStatus() {
     }
   } catch (error) {
     setError("chatError", error.message);
+  }
+}
+
+function validateChatGate() {
+  const age = Number(document.getElementById("ageInput").value);
+  const gender = document.getElementById("genderSelect").value;
+  const adultConfirmed = document.getElementById("adultConfirm").checked;
+
+  if (!Number.isFinite(age) || age < 18) {
+    throw new Error("You must be 18 or older to use random chat.");
+  }
+
+  if (!gender) {
+    throw new Error("Choose girl, boy, or other before starting.");
+  }
+
+  if (!adultConfirmed) {
+    throw new Error("Please confirm you are 18+ and agree to respectful chat.");
+  }
+}
+
+async function requestChatPermissions() {
+  validateChatGate();
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("Camera and mic need HTTPS or localhost in a modern browser.");
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  stream.getTracks().forEach((track) => track.stop());
+  chatAccessApproved = true;
+  document.getElementById("chatGate").classList.add("approved");
+  document.getElementById("permissionBtn").textContent = "camera and mic allowed";
+  setChatStatus("Ready. Click find person.");
+  setChatEnabled(false);
+}
+
+async function beginRandomChat(statusMessage = "Finding someone sweet...") {
+  if (!chatAccessApproved || chatSearchInProgress) return;
+
+  resetChatUi();
+  chatSearchInProgress = true;
+  setChatEnabled(false);
+  setError("chatError");
+  setChatStatus(statusMessage);
+
+  try {
+    const response = await DatingApi.startChat(visitorId);
+    chatRoomToken = response.room_token;
+    chatIsCreator = response.role === "creator";
+    chatSearchInProgress = false;
+    setChatEnabled(false);
+    await pollChatStatus();
+    chatStatusTimer = setInterval(pollChatStatus, 1800);
+  } catch (error) {
+    chatSearchInProgress = false;
+    setError("chatError", error.message);
+    setChatStatus("Not connected");
+    setChatEnabled(false);
+  }
+}
+
+async function leaveCurrentChat() {
+  const roomToLeave = chatRoomToken;
+
+  try {
+    if (roomToLeave) {
+      await DatingApi.leaveChat(visitorId, roomToLeave);
+    }
+  } catch (error) {
+    setError("chatError", error.message);
+  } finally {
+    resetChatUi();
   }
 }
 
@@ -557,22 +635,32 @@ document.getElementById("videoModeBtn").addEventListener("click", () => {
   setChatEnabled(Boolean(chatRoomToken));
 });
 
-document.getElementById("findChatBtn").addEventListener("click", async () => {
-  resetChatUi();
+document.getElementById("permissionBtn").addEventListener("click", async () => {
   setError("chatError");
-  setChatStatus("Finding someone sweet...");
-
   try {
-    const response = await DatingApi.startChat(visitorId);
-    chatRoomToken = response.room_token;
-    chatIsCreator = response.role === "creator";
-    document.getElementById("leaveChatBtn").disabled = false;
-    await pollChatStatus();
-    chatStatusTimer = setInterval(pollChatStatus, 1800);
+    await requestChatPermissions();
   } catch (error) {
     setError("chatError", error.message);
-    setChatStatus("Not connected");
+    setChatStatus("Permission needed before matching");
   }
+});
+
+document.getElementById("findChatBtn").addEventListener("click", () => beginRandomChat());
+
+document.getElementById("skipChatBtn").addEventListener("click", async () => {
+  const roomToLeave = chatRoomToken;
+  resetChatUi();
+  setChatStatus("Skipping...");
+
+  try {
+    if (roomToLeave) {
+      await DatingApi.leaveChat(visitorId, roomToLeave);
+    }
+  } catch (error) {
+    setError("chatError", error.message);
+  }
+
+  await beginRandomChat("Finding a new person...");
 });
 
 document.getElementById("messageForm").addEventListener("submit", async (event) => {
@@ -597,19 +685,7 @@ document.getElementById("messageForm").addEventListener("submit", async (event) 
 
 document.getElementById("videoChatBtn").addEventListener("click", startVideo);
 
-document.getElementById("leaveChatBtn").addEventListener("click", async () => {
-  const roomToLeave = chatRoomToken;
-
-  try {
-    if (roomToLeave) {
-      await DatingApi.leaveChat(visitorId, roomToLeave);
-    }
-  } catch (error) {
-    setError("chatError", error.message);
-  } finally {
-    resetChatUi();
-  }
-});
+document.getElementById("leaveChatBtn").addEventListener("click", leaveCurrentChat);
 
 window.addEventListener("beforeunload", () => {
   if (chatRoomToken) {

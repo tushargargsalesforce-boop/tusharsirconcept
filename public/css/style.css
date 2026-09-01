@@ -438,6 +438,49 @@ select:focus {
   text-align: center;
 }
 
+.chat-gate {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff8fa;
+}
+
+.chat-gate.approved {
+  border-color: rgba(238, 127, 158, 0.6);
+  background: #fff0f4;
+}
+
+.gate-grid {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.gate-grid label {
+  margin: 0;
+}
+
+.check-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  margin: 0;
+  color: #9b5364;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.check-row input {
+  width: 18px;
+  min-height: 18px;
+  margin: 2px 0 0;
+}
+
 .chat-status {
   display: grid;
   place-items: center;
@@ -491,7 +534,7 @@ select:focus {
 
 .chat-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -627,6 +670,7 @@ select:focus {
   }
 
   .video-grid,
+  .gate-grid,
   .chat-actions {
     grid-template-columns: 1fr;
   }

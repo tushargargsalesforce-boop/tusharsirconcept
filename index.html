@@ -139,18 +139,37 @@
     <section class="screen" data-screen="stranger-chat">
       <div class="panel chat-panel">
         <h2>Stranger live chat 💬</h2>
+        <div class="chat-gate" id="chatGate">
+          <div class="gate-grid">
+            <label for="ageInput">Age</label>
+            <input id="ageInput" type="number" min="18" max="99" placeholder="18+ only">
+            <label for="genderSelect">I am</label>
+            <select id="genderSelect">
+              <option value="">choose...</option>
+              <option value="girl">Girl</option>
+              <option value="boy">Boy</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <label class="check-row" for="adultConfirm">
+            <input id="adultConfirm" type="checkbox">
+            <span>I confirm I am 18 or older and will keep the chat respectful.</span>
+          </label>
+          <button class="primary-btn compact-btn" id="permissionBtn" type="button">allow camera and mic</button>
+        </div>
         <div class="mode-tabs" role="group" aria-label="Chat mode">
           <button class="mode-tab active" id="textModeBtn" type="button">Text Chat</button>
           <button class="mode-tab" id="videoModeBtn" type="button">Video Chat</button>
         </div>
-        <p class="tiny-note">Text chat and optional video with a random person. Keep it kind and do not share private details.</p>
+        <p class="tiny-note">Adults only. One click connects you with a random person. Skip anytime.</p>
         <div class="chat-status" id="chatStatus">Not connected</div>
         <div class="video-grid">
           <video id="localVideo" muted playsinline></video>
           <video id="remoteVideo" playsinline autoplay></video>
         </div>
         <div class="chat-actions">
-          <button class="primary-btn compact-btn" id="findChatBtn" type="button">find person</button>
+          <button class="primary-btn compact-btn" id="findChatBtn" type="button" disabled>find person</button>
+          <button class="secondary-btn compact-btn" id="skipChatBtn" type="button" disabled>skip</button>
           <button class="secondary-btn compact-btn" id="videoChatBtn" type="button" disabled>start video</button>
           <button class="secondary-btn compact-btn" id="leaveChatBtn" type="button" disabled>leave</button>
         </div>
