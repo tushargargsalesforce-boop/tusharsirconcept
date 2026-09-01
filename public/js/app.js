@@ -600,7 +600,7 @@ document.getElementById("leaveChatBtn").addEventListener("click", async () => {
 window.addEventListener("beforeunload", () => {
   if (chatRoomToken) {
     navigator.sendBeacon?.(
-      new URL("../backend/api/chat-leave.php", window.location.href).pathname,
+      new URL("backend/api/chat-leave.php", window.location.href).pathname,
       JSON.stringify({ visitor_id: visitorId, room_token: chatRoomToken })
     );
   }

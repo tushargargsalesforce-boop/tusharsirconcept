@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS dating_invitation
+CREATE DATABASE IF NOT EXISTS xrqnafrj_dating_invitation
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE dating_invitation;
+USE xrqnafrj_dating_invitation;
 
 CREATE TABLE IF NOT EXISTS date_responses (
   id INT AUTO_INCREMENT PRIMARY KEY,

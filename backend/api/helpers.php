@@ -67,11 +67,28 @@ function endpoint_guard(callable $handler): void
 
     try {
         $handler(get_pdo(), read_json_body());
+    } catch (DatabaseConfigException $exception) {
+        error_log($exception->getMessage());
+        json_response(['success' => false, 'message' => $exception->getMessage()], 500);
     } catch (PDOException $exception) {
         error_log($exception->getMessage());
-        json_response(['success' => false, 'message' => 'Database unavailable'], 500);
+        json_response(['success' => false, 'message' => database_error_message($exception)], 500);
     } catch (Throwable $exception) {
         error_log($exception->getMessage());
         json_response(['success' => false, 'message' => 'Server error'], 500);
     }
+}
+
+function database_error_message(PDOException $exception): string
+{
+    $errorInfo = $exception->errorInfo;
+    $mysqlCode = isset($errorInfo[1]) ? (int)$errorInfo[1] : 0;
+
+    return match ($mysqlCode) {
+        1044, 1045 => 'Database login failed. Check DB username, password and privileges.',
+        1049 => 'Database name not found. Check DB_DATABASE.',
+        1146 => 'Database table missing. Import database/schema.sql again.',
+        2002, 2003 => 'Database host unavailable. Check DB_HOST and DB_PORT.',
+        default => 'Database unavailable',
+    };
 }

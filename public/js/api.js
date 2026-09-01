@@ -1,6 +1,6 @@
 (function () {
   const jsonHeaders = { "Content-Type": "application/json" };
-  const apiBase = new URL("../backend/api/", window.location.href).pathname;
+  const apiBase = new URL("backend/api/", window.location.href).pathname;
 
   async function request(path, payload) {
     const response = await fetch(`${apiBase}${path}`, {
