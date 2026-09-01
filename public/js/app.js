@@ -60,9 +60,23 @@ function getVisitorId() {
   const existing = localStorage.getItem("dating_visitor_id");
   if (existing) return existing;
 
-  const generated = `dating_${crypto.randomUUID().replace(/-/g, "").slice(0, 10)}`;
+  const generated = `dating_${generateIdPart(10)}`;
   localStorage.setItem("dating_visitor_id", generated);
   return generated;
+}
+
+function generateIdPart(length) {
+  if (window.crypto?.randomUUID) {
+    return window.crypto.randomUUID().replace(/-/g, "").slice(0, length);
+  }
+
+  if (window.crypto?.getRandomValues) {
+    const bytes = new Uint8Array(Math.ceil(length / 2));
+    window.crypto.getRandomValues(bytes);
+    return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("").slice(0, length);
+  }
+
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`.slice(0, length);
 }
 
 function showScreen(name) {
