@@ -353,6 +353,14 @@ select:focus {
   gap: 2px;
 }
 
+.manual-location-input[hidden] {
+  display: none;
+}
+
+.manual-location-input {
+  margin-top: 8px;
+}
+
 .radius-control {
   display: flex;
   align-items: center;

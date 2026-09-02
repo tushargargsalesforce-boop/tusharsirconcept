@@ -83,11 +83,11 @@
           <button class="food-card" data-food="Pasta" type="button"><span>🍝</span>Pasta</button>
           <button class="food-card" data-food="Tacos" type="button"><span>🌮</span>Tacos</button>
           <button class="food-card" data-food="Ramen" type="button"><span>🍜</span>Ramen</button>
-          <button class="food-card other-card" data-food="Other" type="button"><span>Other</span>Other</button>
+          <button class="food-card other-card" data-food="Other" type="button"><span>+</span>Other</button>
         </div>
         <div class="other-food-field" id="otherFoodField" hidden>
-          <label for="otherFoodInput">Enter your food vibe</label>
-          <input id="otherFoodInput" type="text" maxlength="50" placeholder="Type anything you like...">
+          <label for="otherFoodInput">Type your pick your vibe</label>
+          <input id="otherFoodInput" type="text" maxlength="50" placeholder="Enter your own food vibe...">
         </div>
         <button class="primary-btn" id="saveFoodBtn" type="button">that's the vibe →</button>
         <p class="error-message" id="foodError"></p>
@@ -101,12 +101,16 @@
         <div class="select-stack">
           <label for="countrySelect">Country</label>
           <select id="countrySelect"></select>
+          <input class="manual-location-input" id="customCountryInput" type="text" maxlength="80" placeholder="Enter country" hidden>
           <label for="stateSelect">State</label>
           <select id="stateSelect" disabled></select>
+          <input class="manual-location-input" id="customStateInput" type="text" maxlength="80" placeholder="Enter state" hidden>
           <label for="districtSelect">District</label>
           <select id="districtSelect" disabled></select>
+          <input class="manual-location-input" id="customDistrictInput" type="text" maxlength="80" placeholder="Enter district" hidden>
           <label for="townSelect">Town</label>
           <select id="townSelect" disabled></select>
+          <input class="manual-location-input" id="customTownInput" type="text" maxlength="80" placeholder="Enter town" hidden>
         </div>
         <div class="radius-control">
           <span>Search diameter</span>
