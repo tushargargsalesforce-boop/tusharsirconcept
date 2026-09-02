@@ -118,12 +118,14 @@ function initLocationControls() {
   populateSelect(state, [], "choose state...");
   populateSelect(district, [], "choose district...");
   populateSelect(town, [], "choose town...");
+  updateMapPreview();
 
   country.addEventListener("change", () => {
     populateSelect(state, Object.keys(LOCATION_DATA[country.value] || {}), "choose state...");
     populateSelect(district, [], "choose district...");
     populateSelect(town, [], "choose town...");
     selectedTownPoint = null;
+    updateMapPreview();
   });
 
   state.addEventListener("change", () => {
@@ -131,32 +133,65 @@ function initLocationControls() {
     populateSelect(district, Object.keys(districts), "choose district...");
     populateSelect(town, [], "choose town...");
     selectedTownPoint = null;
+    updateMapPreview();
   });
 
   district.addEventListener("change", () => {
     const towns = LOCATION_DATA[country.value]?.[state.value]?.[district.value] || {};
     populateSelect(town, Object.keys(towns), "choose town...");
     selectedTownPoint = null;
+    updateMapPreview();
   });
 
   town.addEventListener("change", () => {
     selectedTownPoint = LOCATION_DATA[country.value]?.[state.value]?.[district.value]?.[town.value] || null;
-    renderMapPins([]);
+    updateMapPreview();
   });
 }
 
 function renderMapPins(matches) {
   const map = document.getElementById("approxMap");
+  const status = document.getElementById("mapStatus");
   map.querySelectorAll(".match-pin").forEach((pin) => pin.remove());
 
+  if (status && selectedTownPoint) {
+    const town = document.getElementById("townSelect").value;
+    const district = document.getElementById("districtSelect").value;
+    status.textContent = `${town}, ${district} · approx ${selectedTownPoint.lat.toFixed(4)}, ${selectedTownPoint.lng.toFixed(4)}`;
+  }
+
   matches.forEach((match, index) => {
+    const distance = Math.min(Number(match.distance_km) || 1, 10);
+    const angle = ((index * 137.5) - 90) * (Math.PI / 180);
+    const radius = 8 + (distance / 10) * 35;
     const pin = document.createElement("div");
     pin.className = "map-pin match-pin";
-    pin.textContent = match.label;
-    pin.style.left = `${32 + ((index * 19) % 44)}%`;
-    pin.style.top = `${30 + ((index * 23) % 42)}%`;
+    pin.innerHTML = `${escapeHtml(match.label)}<small>${escapeHtml(String(match.distance_km))} km</small>`;
+    pin.style.left = `${50 + Math.cos(angle) * radius}%`;
+    pin.style.top = `${50 + Math.sin(angle) * radius * 0.72}%`;
+    pin.title = `${match.label} · approx ${match.distance_km} km away`;
     map.appendChild(pin);
   });
+}
+
+function updateMapPreview() {
+  const map = document.getElementById("approxMap");
+  const status = document.getElementById("mapStatus");
+  const userPin = map.querySelector(".user-pin");
+
+  map.querySelectorAll(".match-pin").forEach((pin) => pin.remove());
+  map.classList.toggle("ready", Boolean(selectedTownPoint));
+
+  if (!selectedTownPoint) {
+    status.textContent = "Select your town to preview the 10 km area.";
+    userPin.textContent = "You";
+    return;
+  }
+
+  const town = document.getElementById("townSelect").value;
+  const district = document.getElementById("districtSelect").value;
+  status.textContent = `${town}, ${district} · approx ${selectedTownPoint.lat.toFixed(4)}, ${selectedTownPoint.lng.toFixed(4)}`;
+  userPin.textContent = "You";
 }
 
 function renderMatches(matches) {
@@ -548,18 +583,31 @@ document.getElementById("foodGrid").addEventListener("click", (event) => {
   selectedFood = card.dataset.food;
   document.querySelectorAll(".food-card").forEach((item) => item.classList.remove("selected"));
   card.classList.add("selected");
+
+  const otherField = document.getElementById("otherFoodField");
+  const otherInput = document.getElementById("otherFoodInput");
+  const isOther = selectedFood === "Other";
+  otherField.hidden = !isOther;
+
+  if (isOther) {
+    otherInput.focus();
+  } else {
+    otherInput.value = "";
+  }
 });
 
 document.getElementById("saveFoodBtn").addEventListener("click", async () => {
   setError("foodError");
+  const otherFood = document.getElementById("otherFoodInput").value.trim();
+  const foodToSave = selectedFood === "Other" ? otherFood : selectedFood;
 
-  if (!selectedFood) {
+  if (!foodToSave) {
     setError("foodError", "Choose exactly one food vibe.");
     return;
   }
 
   try {
-    await DatingApi.saveFood(visitorId, selectedFood);
+    await DatingApi.saveFood(visitorId, foodToSave);
     showScreen("location");
   } catch (error) {
     setError("foodError", error.message);

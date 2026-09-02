@@ -83,6 +83,11 @@
           <button class="food-card" data-food="Pasta" type="button"><span>🍝</span>Pasta</button>
           <button class="food-card" data-food="Tacos" type="button"><span>🌮</span>Tacos</button>
           <button class="food-card" data-food="Ramen" type="button"><span>🍜</span>Ramen</button>
+          <button class="food-card other-card" data-food="Other" type="button"><span>Other</span>Other</button>
+        </div>
+        <div class="other-food-field" id="otherFoodField" hidden>
+          <label for="otherFoodInput">Enter your food vibe</label>
+          <input id="otherFoodInput" type="text" maxlength="50" placeholder="Type anything you like...">
         </div>
         <button class="primary-btn" id="saveFoodBtn" type="button">that's the vibe →</button>
         <p class="error-message" id="foodError"></p>
@@ -108,6 +113,7 @@
           <strong>10 km</strong>
         </div>
         <div class="approx-map" id="approxMap" aria-label="Approximate nearby match map">
+          <div class="map-status" id="mapStatus">Select your town to preview the 10 km area.</div>
           <div class="map-ring"></div>
           <div class="map-pin user-pin">You</div>
         </div>
