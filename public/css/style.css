@@ -594,6 +594,13 @@ select:focus {
   gap: 10px;
 }
 
+.chat-media-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
 .compact-btn {
   width: 100%;
   min-height: 42px;
@@ -727,6 +734,7 @@ select:focus {
 
   .video-grid,
   .gate-grid,
+  .chat-media-controls,
   .chat-actions {
     grid-template-columns: 1fr;
   }

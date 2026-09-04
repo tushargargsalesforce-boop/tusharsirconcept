@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="public/css/style.css?v=20260904-geo">
+  <link rel="stylesheet" href="public/css/style.css?v=20260904-chat">
 </head>
 <body>
   <div class="petal-field" aria-hidden="true"></div>
@@ -177,8 +177,13 @@
         <p class="tiny-note">Adults only. One click connects you with a random person. Skip anytime.</p>
         <div class="chat-status" id="chatStatus">Not connected</div>
         <div class="video-grid">
-          <video id="localVideo" muted playsinline></video>
+          <video id="localVideo" muted playsinline autoplay></video>
           <video id="remoteVideo" playsinline autoplay></video>
+        </div>
+        <div class="chat-media-controls">
+          <button class="secondary-btn compact-btn" id="micToggleBtn" type="button" disabled>mic on</button>
+          <button class="secondary-btn compact-btn" id="cameraToggleBtn" type="button" disabled>camera on</button>
+          <button class="secondary-btn compact-btn" id="speakerToggleBtn" type="button" disabled>speaker on</button>
         </div>
         <div class="chat-actions">
           <button class="primary-btn compact-btn" id="findChatBtn" type="button" disabled>find person</button>
@@ -196,8 +201,8 @@
     </section>
   </main>
 
-  <script src="public/js/api.js?v=20260904-geo"></script>
-  <script src="public/js/animations.js?v=20260904-geo"></script>
-  <script src="public/js/app.js?v=20260904-geo"></script>
+  <script src="public/js/api.js?v=20260904-chat"></script>
+  <script src="public/js/animations.js?v=20260904-chat"></script>
+  <script src="public/js/app.js?v=20260904-chat"></script>
 </body>
 </html>

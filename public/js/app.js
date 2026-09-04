@@ -18,6 +18,9 @@ let chatMode = "text";
 let chatAccessApproved = false;
 let mediaAccessApproved = false;
 let chatSearchInProgress = false;
+let micEnabled = true;
+let cameraEnabled = true;
+let speakerEnabled = true;
 
 function getVisitorId() {
   const existing = localStorage.getItem("dating_visitor_id");
@@ -366,6 +369,21 @@ function setChatEnabled(enabled) {
   document.getElementById("skipChatBtn").disabled = !chatRoomToken || chatSearchInProgress;
   document.getElementById("leaveChatBtn").disabled = !chatRoomToken;
   document.getElementById("findChatBtn").disabled = !chatAccessApproved || chatSearchInProgress;
+  updateMediaButtons();
+}
+
+function updateMediaButtons() {
+  const micButton = document.getElementById("micToggleBtn");
+  const cameraButton = document.getElementById("cameraToggleBtn");
+  const speakerButton = document.getElementById("speakerToggleBtn");
+  const hasStream = Boolean(localStream);
+
+  micButton.disabled = !hasStream;
+  cameraButton.disabled = !hasStream;
+  speakerButton.disabled = !document.getElementById("remoteVideo").srcObject;
+  micButton.textContent = micEnabled ? "mic on" : "mic off";
+  cameraButton.textContent = cameraEnabled ? "camera on" : "camera off";
+  speakerButton.textContent = speakerEnabled ? "speaker on" : "speaker off";
 }
 
 function addMessageBubble(message) {
@@ -401,6 +419,8 @@ function resetChatUi() {
   document.getElementById("messages").innerHTML = "";
   document.getElementById("videoChatBtn").textContent = "start video";
   stopVideo();
+  updatePermissionButton();
+  updateMediaButtons();
 }
 
 function startMessagePolling() {
@@ -533,6 +553,27 @@ async function getLocalMediaStream() {
   }
 }
 
+async function ensureLocalMediaStream() {
+  if (localStream) {
+    return localStream;
+  }
+
+  localStream = await getLocalMediaStream();
+  micEnabled = true;
+  cameraEnabled = true;
+  localStream.getAudioTracks().forEach((track) => {
+    track.enabled = micEnabled;
+  });
+  localStream.getVideoTracks().forEach((track) => {
+    track.enabled = cameraEnabled;
+  });
+  const localVideo = document.getElementById("localVideo");
+  localVideo.srcObject = localStream;
+  localVideo.play().catch(() => {});
+  updateMediaButtons();
+  return localStream;
+}
+
 async function requestChatPermissions() {
   validateChatGate();
 
@@ -541,8 +582,7 @@ async function requestChatPermissions() {
     return;
   }
 
-  const stream = await getLocalMediaStream();
-  stream.getTracks().forEach((track) => track.stop());
+  await ensureLocalMediaStream();
   mediaAccessApproved = true;
   approveChatGate("Camera and mic allowed. Click find person.");
 }
@@ -563,20 +603,21 @@ async function prepareSelectedChatMode() {
 async function beginRandomChat(statusMessage = "Finding someone sweet...") {
   if (chatSearchInProgress) return;
 
-  try {
-    await prepareSelectedChatMode();
-  } catch (error) {
-    setError("chatError", error.message);
-    setChatStatus("Complete the 18+ chat check first");
-    setChatEnabled(false);
-    return;
-  }
-
   resetChatUi();
   chatSearchInProgress = true;
   setChatEnabled(false);
   setError("chatError");
   setChatStatus(statusMessage);
+
+  try {
+    await prepareSelectedChatMode();
+  } catch (error) {
+    chatSearchInProgress = false;
+    setError("chatError", error.message);
+    setChatStatus("Complete the 18+ chat check first");
+    setChatEnabled(false);
+    return;
+  }
 
   try {
     const response = await DatingApi.startChat(visitorId, chatMode);
@@ -624,12 +665,15 @@ async function createPeerConnection() {
   };
 
   peerConnection.ontrack = (event) => {
-    document.getElementById("remoteVideo").srcObject = event.streams[0];
+    const remoteVideo = document.getElementById("remoteVideo");
+    remoteVideo.srcObject = event.streams[0];
+    remoteVideo.muted = !speakerEnabled;
+    remoteVideo.play().catch(() => {});
+    updateMediaButtons();
   };
 
-  localStream = await getLocalMediaStream();
-  document.getElementById("localVideo").srcObject = localStream;
-  localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
+  const stream = await ensureLocalMediaStream();
+  stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
 
   return peerConnection;
 }
@@ -710,6 +754,7 @@ function stopVideo() {
   peerConnection = null;
   document.getElementById("localVideo").srcObject = null;
   document.getElementById("remoteVideo").srcObject = null;
+  updateMediaButtons();
 }
 
 document.getElementById("noBtn").addEventListener("mouseenter", (event) => {
@@ -934,6 +979,29 @@ document.getElementById("messageForm").addEventListener("submit", async (event) 
 });
 
 document.getElementById("videoChatBtn").addEventListener("click", startVideo);
+
+document.getElementById("micToggleBtn").addEventListener("click", () => {
+  micEnabled = !micEnabled;
+  localStream?.getAudioTracks().forEach((track) => {
+    track.enabled = micEnabled;
+  });
+  updateMediaButtons();
+});
+
+document.getElementById("cameraToggleBtn").addEventListener("click", () => {
+  cameraEnabled = !cameraEnabled;
+  localStream?.getVideoTracks().forEach((track) => {
+    track.enabled = cameraEnabled;
+  });
+  updateMediaButtons();
+});
+
+document.getElementById("speakerToggleBtn").addEventListener("click", () => {
+  speakerEnabled = !speakerEnabled;
+  const remoteVideo = document.getElementById("remoteVideo");
+  remoteVideo.muted = !speakerEnabled;
+  updateMediaButtons();
+});
 
 document.getElementById("leaveChatBtn").addEventListener("click", leaveCurrentChat);
 
