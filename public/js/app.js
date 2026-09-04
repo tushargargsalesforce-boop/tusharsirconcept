@@ -131,7 +131,7 @@ async function initLocationControls() {
   try {
     populateSelect(country, await loadGeoNames({ action: "countries" }), "choose country...");
   } catch (error) {
-    populateSelect(country, [], "countries unavailable");
+    populateSelect(country, [], "GeoNames setup needed");
     setError("locationError", error.message);
   }
 

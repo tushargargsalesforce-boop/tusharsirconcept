@@ -120,16 +120,9 @@ json_response(['success' => false, 'message' => 'Invalid GeoNames action'], 422)
 function geonames_request(string $service, array $params): array
 {
     $url = 'https://secure.geonames.org/' . $service . '?' . http_build_query($params);
-    $context = stream_context_create([
-        'http' => [
-            'method' => 'GET',
-            'timeout' => 15,
-            'ignore_errors' => true,
-        ],
-    ]);
-    $body = file_get_contents($url, false, $context);
+    $body = http_get($url);
 
-    if ($body === false) {
+    if ($body === '') {
         json_response(['success' => false, 'message' => 'GeoNames request failed'], 502);
     }
 
@@ -144,6 +137,50 @@ function geonames_request(string $service, array $params): array
     }
 
     return $decoded;
+}
+
+function http_get(string $url): string
+{
+    if (function_exists('curl_init')) {
+        $curl = curl_init($url);
+
+        curl_setopt_array($curl, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_USERAGENT => 'dating-invitation-geonames/1.0',
+        ]);
+
+        $body = curl_exec($curl);
+        $error = curl_error($curl);
+        $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if ($body === false || $status >= 400) {
+            error_log('GeoNames cURL failed: ' . ($error !== '' ? $error : 'HTTP ' . $status));
+            return '';
+        }
+
+        return (string)$body;
+    }
+
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'GET',
+            'timeout' => 15,
+            'ignore_errors' => true,
+        ],
+    ]);
+    $body = file_get_contents($url, false, $context);
+
+    if ($body === false) {
+        error_log('GeoNames file_get_contents failed.');
+        return '';
+    }
+
+    return (string)$body;
 }
 
 function sort_geonames(array $items): array
