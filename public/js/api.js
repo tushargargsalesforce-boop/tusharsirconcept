@@ -67,5 +67,6 @@
       request("chat-leave.php", { visitor_id: visitorId, room_token: roomToken }),
     heartbeat: (payload) => request("online-heartbeat.php", payload),
     onlineStats: (visitorId) => request("online-stats.php", { visitor_id: visitorId }),
+    geonames: (payload) => request("geonames.php", payload),
   };
 })();

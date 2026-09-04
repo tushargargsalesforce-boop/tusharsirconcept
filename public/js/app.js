@@ -1,43 +1,3 @@
-const LOCATION_DATA = {
-  India: {
-    Maharashtra: {
-      Pune: {
-        "Shivajinagar": { lat: 18.5308, lng: 73.8475 },
-        "Koregaon Park": { lat: 18.5362, lng: 73.8938 },
-        "Hinjawadi": { lat: 18.5913, lng: 73.7389 },
-      },
-      Mumbai: {
-        Bandra: { lat: 19.0596, lng: 72.8295 },
-        Andheri: { lat: 19.1197, lng: 72.8464 },
-      },
-    },
-    Delhi: {
-      "New Delhi": {
-        "Connaught Place": { lat: 28.6315, lng: 77.2167 },
-        Saket: { lat: 28.5245, lng: 77.2066 },
-      },
-    },
-  },
-  "United States": {
-    California: {
-      "Los Angeles County": {
-        "Santa Monica": { lat: 34.0195, lng: -118.4912 },
-        Pasadena: { lat: 34.1478, lng: -118.1445 },
-      },
-      "San Francisco County": {
-        "Mission District": { lat: 37.7599, lng: -122.4148 },
-        "Nob Hill": { lat: 37.793, lng: -122.4161 },
-      },
-    },
-    "New York": {
-      "New York County": {
-        Chelsea: { lat: 40.7465, lng: -74.0014 },
-        Harlem: { lat: 40.8116, lng: -73.9465 },
-      },
-    },
-  },
-};
-
 const screens = [...document.querySelectorAll(".screen")];
 const visitorId = getVisitorId();
 let selectedFood = "";
@@ -100,52 +60,171 @@ function populateSelect(select, values, placeholder) {
   select.appendChild(empty);
 
   values.forEach((value) => {
+    const item = typeof value === "string" ? { name: value, geonameId: value } : value;
     const option = document.createElement("option");
-    option.value = value;
-    option.textContent = value;
+    option.value = String(item.geonameId);
+    option.textContent = item.name;
+    option.dataset.name = item.name;
+    option.dataset.lat = item.lat ?? "";
+    option.dataset.lng = item.lng ?? "";
+    option.dataset.countryCode = item.countryCode ?? "";
+    option.dataset.adminCode1 = item.adminCode1 ?? "";
+    option.dataset.adminCode2 = item.adminCode2 ?? "";
+    option.dataset.featureClass = item.featureClass ?? "";
+    option.dataset.featureCode = item.featureCode ?? "";
     select.appendChild(option);
   });
 
   select.disabled = values.length === 0;
 }
 
-function initLocationControls() {
+function setSelectLoading(select, message) {
+  select.innerHTML = "";
+  const option = document.createElement("option");
+  option.value = "";
+  option.textContent = message;
+  select.appendChild(option);
+  select.disabled = true;
+}
+
+function selectedGeoOption(select) {
+  const option = select.selectedOptions[0];
+
+  if (!option || !option.value) {
+    return null;
+  }
+
+  return {
+    geonameId: option.value,
+    name: option.dataset.name || option.textContent,
+    lat: Number(option.dataset.lat),
+    lng: Number(option.dataset.lng),
+    countryCode: option.dataset.countryCode || "",
+    adminCode1: option.dataset.adminCode1 || "",
+    adminCode2: option.dataset.adminCode2 || "",
+    featureClass: option.dataset.featureClass || "",
+    featureCode: option.dataset.featureCode || "",
+  };
+}
+
+function selectedGeoName(selectId) {
+  return selectedGeoOption(document.getElementById(selectId))?.name || "";
+}
+
+async function loadGeoNames(payload) {
+  const response = await DatingApi.geonames(payload);
+  return response.items || [];
+}
+
+async function initLocationControls() {
   const country = document.getElementById("countrySelect");
   const state = document.getElementById("stateSelect");
   const district = document.getElementById("districtSelect");
   const town = document.getElementById("townSelect");
 
-  populateSelect(country, Object.keys(LOCATION_DATA), "choose country...");
+  setSelectLoading(country, "loading countries...");
   populateSelect(state, [], "choose state...");
   populateSelect(district, [], "choose district...");
   populateSelect(town, [], "choose town...");
   updateMapPreview();
 
-  country.addEventListener("change", () => {
-    populateSelect(state, Object.keys(LOCATION_DATA[country.value] || {}), "choose state...");
+  try {
+    populateSelect(country, await loadGeoNames({ action: "countries" }), "choose country...");
+  } catch (error) {
+    populateSelect(country, [], "countries unavailable");
+    setError("locationError", error.message);
+  }
+
+  country.addEventListener("change", async () => {
+    const selectedCountry = selectedGeoOption(country);
+    selectedTownPoint = null;
     populateSelect(district, [], "choose district...");
     populateSelect(town, [], "choose town...");
-    selectedTownPoint = null;
     updateMapPreview();
+
+    if (!selectedCountry) {
+      populateSelect(state, [], "choose state...");
+      return;
+    }
+
+    setSelectLoading(state, "loading states...");
+    setError("locationError");
+
+    try {
+      populateSelect(
+        state,
+        await loadGeoNames({ action: "children", geoname_id: selectedCountry.geonameId }),
+        "choose state..."
+      );
+    } catch (error) {
+      populateSelect(state, [], "states unavailable");
+      setError("locationError", error.message);
+    }
   });
 
-  state.addEventListener("change", () => {
-    const districts = LOCATION_DATA[country.value]?.[state.value] || {};
-    populateSelect(district, Object.keys(districts), "choose district...");
+  state.addEventListener("change", async () => {
+    const selectedState = selectedGeoOption(state);
+    selectedTownPoint = null;
     populateSelect(town, [], "choose town...");
-    selectedTownPoint = null;
     updateMapPreview();
+
+    if (!selectedState) {
+      populateSelect(district, [], "choose district...");
+      return;
+    }
+
+    setSelectLoading(district, "loading districts...");
+    setError("locationError");
+
+    try {
+      populateSelect(
+        district,
+        await loadGeoNames({ action: "children", geoname_id: selectedState.geonameId }),
+        "choose district..."
+      );
+    } catch (error) {
+      populateSelect(district, [], "districts unavailable");
+      setError("locationError", error.message);
+    }
   });
 
-  district.addEventListener("change", () => {
-    const towns = LOCATION_DATA[country.value]?.[state.value]?.[district.value] || {};
-    populateSelect(town, Object.keys(towns), "choose town...");
+  district.addEventListener("change", async () => {
+    const selectedDistrict = selectedGeoOption(district);
     selectedTownPoint = null;
     updateMapPreview();
+
+    if (!selectedDistrict) {
+      populateSelect(town, [], "choose town...");
+      return;
+    }
+
+    setSelectLoading(town, "loading towns...");
+    setError("locationError");
+
+    try {
+      let townItems = await loadGeoNames({ action: "children", geoname_id: selectedDistrict.geonameId });
+
+      if (!townItems.length) {
+        townItems = await loadGeoNames({
+          action: "cities",
+          country_code: selectedDistrict.countryCode,
+          admin_code_1: selectedDistrict.adminCode1,
+          admin_code_2: selectedDistrict.adminCode2,
+        });
+      }
+
+      populateSelect(town, townItems, "choose town...");
+    } catch (error) {
+      populateSelect(town, [], "towns unavailable");
+      setError("locationError", error.message);
+    }
   });
 
   town.addEventListener("change", () => {
-    selectedTownPoint = LOCATION_DATA[country.value]?.[state.value]?.[district.value]?.[town.value] || null;
+    const selectedTown = selectedGeoOption(town);
+    selectedTownPoint = selectedTown && Number.isFinite(selectedTown.lat) && Number.isFinite(selectedTown.lng)
+      ? { lat: selectedTown.lat, lng: selectedTown.lng }
+      : null;
     updateMapPreview();
   });
 }
@@ -156,8 +235,8 @@ function renderMapPins(matches) {
   map.querySelectorAll(".match-pin").forEach((pin) => pin.remove());
 
   if (status && selectedTownPoint) {
-    const town = document.getElementById("townSelect").value;
-    const district = document.getElementById("districtSelect").value;
+    const town = selectedGeoName("townSelect");
+    const district = selectedGeoName("districtSelect");
     status.textContent = `${town}, ${district} · approx ${selectedTownPoint.lat.toFixed(4)}, ${selectedTownPoint.lng.toFixed(4)}`;
   }
 
@@ -189,8 +268,8 @@ function updateMapPreview() {
     return;
   }
 
-  const town = document.getElementById("townSelect").value;
-  const district = document.getElementById("districtSelect").value;
+  const town = selectedGeoName("townSelect");
+  const district = selectedGeoName("districtSelect");
   status.textContent = `${town}, ${district} · approx ${selectedTownPoint.lat.toFixed(4)}, ${selectedTownPoint.lng.toFixed(4)}`;
   userPin.textContent = "You";
 }
@@ -228,10 +307,10 @@ function escapeHtml(value) {
 function currentLocationPayload() {
   return {
     visitor_id: visitorId,
-    country: document.getElementById("countrySelect")?.value || "",
-    state: document.getElementById("stateSelect")?.value || "",
-    district: document.getElementById("districtSelect")?.value || "",
-    town: document.getElementById("townSelect")?.value || "",
+    country: selectedGeoName("countrySelect"),
+    state: selectedGeoName("stateSelect"),
+    district: selectedGeoName("districtSelect"),
+    town: selectedGeoName("townSelect"),
   };
 }
 
@@ -407,6 +486,53 @@ function updatePermissionButton() {
   button.textContent = chatAccessApproved ? "chat access allowed" : "continue to text chat";
 }
 
+function isLocalhostPage() {
+  return ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+}
+
+function localVideoUrl() {
+  const port = window.location.port ? `:${window.location.port}` : "";
+  return `http://localhost${port}${window.location.pathname}${window.location.search}`;
+}
+
+function mediaUnavailableMessage() {
+  if (!window.isSecureContext && !isLocalhostPage()) {
+    return `Video needs HTTPS or localhost. Open this page as ${localVideoUrl()} or install SSL for this domain.`;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    return "This browser does not support camera/mic access. Use Chrome, Edge, or Firefox.";
+  }
+
+  if (!window.RTCPeerConnection) {
+    return "This browser does not support live video calls.";
+  }
+
+  return "";
+}
+
+async function getLocalMediaStream() {
+  const unavailableMessage = mediaUnavailableMessage();
+
+  if (unavailableMessage) {
+    throw new Error(unavailableMessage);
+  }
+
+  try {
+    return await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  } catch (error) {
+    if (error.name === "NotAllowedError") {
+      throw new Error("Camera/mic permission was blocked. Allow it from the browser address bar and try again.");
+    }
+
+    if (error.name === "NotFoundError") {
+      throw new Error("No camera or microphone was found on this device.");
+    }
+
+    throw new Error(error.message || "Camera/mic could not start.");
+  }
+}
+
 async function requestChatPermissions() {
   validateChatGate();
 
@@ -415,11 +541,7 @@ async function requestChatPermissions() {
     return;
   }
 
-  if (!navigator.mediaDevices?.getUserMedia) {
-    throw new Error("Camera and mic need HTTPS or localhost in a modern browser.");
-  }
-
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  const stream = await getLocalMediaStream();
   stream.getTracks().forEach((track) => track.stop());
   mediaAccessApproved = true;
   approveChatGate("Camera and mic allowed. Click find person.");
@@ -505,7 +627,7 @@ async function createPeerConnection() {
     document.getElementById("remoteVideo").srcObject = event.streams[0];
   };
 
-  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  localStream = await getLocalMediaStream();
   document.getElementById("localVideo").srcObject = localStream;
   localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
 
@@ -515,8 +637,9 @@ async function createPeerConnection() {
 async function startVideo() {
   if (!chatRoomToken || videoStarted) return;
 
-  if (!navigator.mediaDevices?.getUserMedia || !window.RTCPeerConnection) {
-    setError("chatError", "Video chat needs a modern browser on localhost or HTTPS.");
+  const unavailableMessage = mediaUnavailableMessage();
+  if (unavailableMessage) {
+    setError("chatError", unavailableMessage);
     return;
   }
 
@@ -665,10 +788,10 @@ document.getElementById("saveFoodBtn").addEventListener("click", async () => {
 });
 
 document.getElementById("saveLocationBtn").addEventListener("click", async () => {
-  const country = document.getElementById("countrySelect").value;
-  const state = document.getElementById("stateSelect").value;
-  const district = document.getElementById("districtSelect").value;
-  const town = document.getElementById("townSelect").value;
+  const country = selectedGeoName("countrySelect");
+  const state = selectedGeoName("stateSelect");
+  const district = selectedGeoName("districtSelect");
+  const town = selectedGeoName("townSelect");
   setError("locationError");
 
   if (!country || !state || !district || !town || !selectedTownPoint) {
