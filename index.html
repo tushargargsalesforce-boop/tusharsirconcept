@@ -176,14 +176,21 @@
         </div>
         <p class="tiny-note">Adults only. One click connects you with a random person. Skip anytime.</p>
         <div class="chat-status" id="chatStatus">Not connected</div>
-        <div class="video-grid">
-          <video id="localVideo" muted playsinline autoplay></video>
-          <video id="remoteVideo" playsinline autoplay></video>
+        <div class="video-grid" id="videoGrid">
+          <div class="video-tile">
+            <video id="localVideo" muted playsinline autoplay></video>
+            <span class="video-label">You</span>
+          </div>
+          <div class="video-tile">
+            <video id="remoteVideo" playsinline autoplay></video>
+            <span class="video-label">Random person</span>
+          </div>
         </div>
         <div class="chat-media-controls">
           <button class="secondary-btn compact-btn" id="micToggleBtn" type="button" disabled>mic on</button>
           <button class="secondary-btn compact-btn" id="cameraToggleBtn" type="button" disabled>camera on</button>
           <button class="secondary-btn compact-btn" id="speakerToggleBtn" type="button" disabled>speaker on</button>
+          <button class="secondary-btn compact-btn" id="fullscreenVideoBtn" type="button" disabled>full screen</button>
         </div>
         <div class="chat-actions">
           <button class="primary-btn compact-btn" id="findChatBtn" type="button" disabled>find person</button>
