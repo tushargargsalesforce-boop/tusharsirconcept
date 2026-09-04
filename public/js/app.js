@@ -56,6 +56,7 @@ let localStream = null;
 let videoStarted = false;
 let chatMode = "text";
 let chatAccessApproved = false;
+let mediaAccessApproved = false;
 let chatSearchInProgress = false;
 
 function getVisitorId() {
@@ -278,9 +279,11 @@ function setChatStatus(message) {
 }
 
 function setChatEnabled(enabled) {
-  document.getElementById("messageInput").disabled = !enabled;
-  document.querySelector(".send-btn").disabled = !enabled;
-  document.getElementById("videoChatBtn").disabled = !enabled || chatMode !== "video";
+  const canUseChat = enabled && chatAccessApproved;
+
+  document.getElementById("messageInput").disabled = !canUseChat;
+  document.querySelector(".send-btn").disabled = !canUseChat;
+  document.getElementById("videoChatBtn").disabled = !canUseChat || chatMode !== "video" || !mediaAccessApproved;
   document.getElementById("skipChatBtn").disabled = !chatRoomToken || chatSearchInProgress;
   document.getElementById("leaveChatBtn").disabled = !chatRoomToken;
   document.getElementById("findChatBtn").disabled = !chatAccessApproved || chatSearchInProgress;
@@ -381,8 +384,32 @@ function validateChatGate() {
   }
 }
 
+function approveChatGate(statusMessage = "Ready. Click find person.") {
+  chatAccessApproved = true;
+  document.getElementById("chatGate").classList.add("approved");
+  setChatStatus(statusMessage);
+  setChatEnabled(Boolean(chatRoomToken));
+  updatePermissionButton();
+}
+
+function updatePermissionButton() {
+  const button = document.getElementById("permissionBtn");
+
+  if (chatMode === "video") {
+    button.textContent = mediaAccessApproved ? "camera and mic allowed" : "allow camera and mic";
+    return;
+  }
+
+  button.textContent = chatAccessApproved ? "chat access allowed" : "continue to text chat";
+}
+
 async function requestChatPermissions() {
   validateChatGate();
+
+  if (chatMode === "text") {
+    approveChatGate();
+    return;
+  }
 
   if (!navigator.mediaDevices?.getUserMedia) {
     throw new Error("Camera and mic need HTTPS or localhost in a modern browser.");
@@ -390,15 +417,24 @@ async function requestChatPermissions() {
 
   const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   stream.getTracks().forEach((track) => track.stop());
-  chatAccessApproved = true;
-  document.getElementById("chatGate").classList.add("approved");
-  document.getElementById("permissionBtn").textContent = "camera and mic allowed";
-  setChatStatus("Ready. Click find person.");
-  setChatEnabled(false);
+  mediaAccessApproved = true;
+  approveChatGate("Camera and mic allowed. Click find person.");
 }
 
 async function beginRandomChat(statusMessage = "Finding someone sweet...") {
-  if (!chatAccessApproved || chatSearchInProgress) return;
+  if (chatSearchInProgress) return;
+
+  try {
+    validateChatGate();
+    if (!chatAccessApproved) {
+      approveChatGate();
+    }
+  } catch (error) {
+    setError("chatError", error.message);
+    setChatStatus("Complete the 18+ chat check first");
+    setChatEnabled(false);
+    return;
+  }
 
   resetChatUi();
   chatSearchInProgress = true;
@@ -673,6 +709,7 @@ document.getElementById("textModeBtn").addEventListener("click", () => {
   chatMode = "text";
   document.getElementById("textModeBtn").classList.add("active");
   document.getElementById("videoModeBtn").classList.remove("active");
+  updatePermissionButton();
   setChatEnabled(Boolean(chatRoomToken));
 });
 
@@ -680,6 +717,7 @@ document.getElementById("videoModeBtn").addEventListener("click", () => {
   chatMode = "video";
   document.getElementById("videoModeBtn").classList.add("active");
   document.getElementById("textModeBtn").classList.remove("active");
+  updatePermissionButton();
   setChatEnabled(Boolean(chatRoomToken));
 });
 
@@ -691,6 +729,19 @@ document.getElementById("permissionBtn").addEventListener("click", async () => {
     setError("chatError", error.message);
     setChatStatus("Permission needed before matching");
   }
+});
+
+["ageInput", "genderSelect", "adultConfirm"].forEach((id) => {
+  const gateControl = document.getElementById(id);
+  const resetGateApproval = () => {
+    chatAccessApproved = false;
+    document.getElementById("chatGate").classList.remove("approved");
+    updatePermissionButton();
+    setChatEnabled(Boolean(chatRoomToken));
+  };
+
+  gateControl.addEventListener("input", resetGateApproval);
+  gateControl.addEventListener("change", resetGateApproval);
 });
 
 document.getElementById("findChatBtn").addEventListener("click", () => beginRandomChat());
@@ -746,6 +797,7 @@ window.addEventListener("beforeunload", () => {
 
 RomanceAnimations.makePetals();
 initLocationControls();
+updatePermissionButton();
 sendHeartbeat();
 heartbeatTimer = setInterval(sendHeartbeat, 30000);
 statsTimer = setInterval(refreshOnlineStats, 45000);
