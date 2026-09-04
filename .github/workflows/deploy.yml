@@ -21,11 +21,4 @@ jobs:
             cd /home/xrqnafrj/talkify.website/tusharsirconcept
             git fetch origin
             git reset --hard origin/main
-            cat > .env <<'ENV'
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            DB_DATABASE=${{ secrets.DB_DATABASE }}
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            GEONAMES_USERNAME=${{ secrets.GEONAMES_USERNAME }}
-            ENV
+            printf '%s\n' '${{ secrets.ENV_FILE }}' > .env
