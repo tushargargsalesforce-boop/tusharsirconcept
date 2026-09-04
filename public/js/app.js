@@ -360,6 +360,14 @@ function setChatStatus(message) {
   document.getElementById("chatStatus").textContent = message;
 }
 
+function updateChatModeUi() {
+  document.querySelector(".chat-panel").classList.toggle("video-mode", chatMode === "video");
+  document.getElementById("textModeBtn").classList.toggle("active", chatMode === "text");
+  document.getElementById("videoModeBtn").classList.toggle("active", chatMode === "video");
+  updatePermissionButton();
+  setChatEnabled(Boolean(chatRoomToken));
+}
+
 function setChatEnabled(enabled) {
   const canUseChat = enabled && chatAccessApproved;
 
@@ -590,8 +598,10 @@ async function requestChatPermissions() {
 async function prepareSelectedChatMode() {
   validateChatGate();
 
-  if (chatMode === "video" && !mediaAccessApproved) {
-    await requestChatPermissions();
+  if (chatMode === "video") {
+    await ensureLocalMediaStream();
+    mediaAccessApproved = true;
+    approveChatGate("Camera and mic allowed. Click find person.");
     return;
   }
 
@@ -889,31 +899,22 @@ document.getElementById("closeOnlinePanel").addEventListener("click", () => {
 
 document.getElementById("textModeBtn").addEventListener("click", () => {
   chatMode = "text";
-  document.getElementById("textModeBtn").classList.add("active");
-  document.getElementById("videoModeBtn").classList.remove("active");
-  updatePermissionButton();
-  setChatEnabled(Boolean(chatRoomToken));
+  setError("chatError");
+  stopVideo();
+  updateChatModeUi();
 });
 
 document.getElementById("videoModeBtn").addEventListener("click", async () => {
   chatMode = "video";
-  document.getElementById("videoModeBtn").classList.add("active");
-  document.getElementById("textModeBtn").classList.remove("active");
-  updatePermissionButton();
-  setChatEnabled(Boolean(chatRoomToken));
-
+  updateChatModeUi();
   setError("chatError");
-  try {
-    if (chatRoomToken) {
-      await requestChatPermissions();
-      await startVideo();
-      return;
-    }
 
-    await beginRandomChat("Finding random video chat...");
+  try {
+    await requestChatPermissions();
+    if (chatRoomToken) await startVideo();
   } catch (error) {
     setError("chatError", error.message);
-    setChatStatus("Permission needed before video matching");
+    setChatStatus("Allow camera and mic before video matching");
   }
 });
 
@@ -1016,6 +1017,7 @@ window.addEventListener("beforeunload", () => {
 
 RomanceAnimations.makePetals();
 initLocationControls();
+updateChatModeUi();
 updatePermissionButton();
 sendHeartbeat();
 heartbeatTimer = setInterval(sendHeartbeat, 30000);

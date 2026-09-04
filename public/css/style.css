@@ -245,6 +245,15 @@ p {
   transform: translateY(-2px);
 }
 
+.primary-btn:disabled,
+.secondary-btn:disabled,
+.mode-tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
 .secondary-btn {
   min-width: 92px;
   margin-top: 14px;
@@ -573,10 +582,14 @@ select:focus {
 }
 
 .video-grid {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin: 14px 0;
+}
+
+.chat-panel.video-mode .video-grid {
+  display: grid;
 }
 
 .video-grid video {
@@ -595,10 +608,14 @@ select:focus {
 }
 
 .chat-media-controls {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin: 0 0 14px;
+}
+
+.chat-panel.video-mode .chat-media-controls {
+  display: grid;
 }
 
 .compact-btn {
