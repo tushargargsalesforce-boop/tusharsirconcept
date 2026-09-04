@@ -10,6 +10,7 @@ function random_room_token(): string
 
 endpoint_guard(function (PDO $pdo, array $data): void {
     $visitorId = clean_visitor_id($data);
+    $chatMode = clean_chat_mode($data);
     upsert_visitor($pdo, $visitorId);
 
     $pdo->beginTransaction();
@@ -27,12 +28,16 @@ endpoint_guard(function (PDO $pdo, array $data): void {
          FROM chat_rooms
          WHERE status = 'waiting'
            AND visitor_one <> :visitor_id
+           AND chat_mode = :chat_mode
            AND updated_at > (NOW() - INTERVAL 10 MINUTE)
          ORDER BY created_at ASC
          LIMIT 1
          FOR UPDATE"
     );
-    $find->execute(['visitor_id' => $visitorId]);
+    $find->execute([
+        'visitor_id' => $visitorId,
+        'chat_mode' => $chatMode,
+    ]);
     $room = $find->fetch();
 
     if ($room) {
@@ -53,17 +58,19 @@ endpoint_guard(function (PDO $pdo, array $data): void {
             'room_token' => $room['room_token'],
             'role' => 'joiner',
             'status' => 'active',
+            'chat_mode' => $chatMode,
         ]);
     }
 
     $roomToken = random_room_token();
     $create = $pdo->prepare(
-        "INSERT INTO chat_rooms (room_token, visitor_one, status)
-         VALUES (:room_token, :visitor_id, 'waiting')"
+        "INSERT INTO chat_rooms (room_token, visitor_one, chat_mode, status)
+         VALUES (:room_token, :visitor_id, :chat_mode, 'waiting')"
     );
     $create->execute([
         'room_token' => $roomToken,
         'visitor_id' => $visitorId,
+        'chat_mode' => $chatMode,
     ]);
     $pdo->commit();
 
@@ -73,5 +80,17 @@ endpoint_guard(function (PDO $pdo, array $data): void {
         'room_token' => $roomToken,
         'role' => 'creator',
         'status' => 'waiting',
+        'chat_mode' => $chatMode,
     ]);
 });
+
+function clean_chat_mode(array $data): string
+{
+    $chatMode = trim((string)($data['chat_mode'] ?? 'text'));
+
+    if (!in_array($chatMode, ['text', 'video'], true)) {
+        json_response(['success' => false, 'message' => 'Invalid chat mode'], 422);
+    }
+
+    return $chatMode;
+}

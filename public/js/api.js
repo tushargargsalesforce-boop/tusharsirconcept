@@ -34,7 +34,8 @@
     saveLocation: (payload) => request("location.php", payload),
     accept: (visitorId) => request("accept.php", { visitor_id: visitorId }),
     matches: (visitorId) => request("matches.php", { visitor_id: visitorId }),
-    startChat: (visitorId) => request("chat-start.php", { visitor_id: visitorId }),
+    startChat: (visitorId, chatMode) =>
+      request("chat-start.php", { visitor_id: visitorId, chat_mode: chatMode }),
     chatStatus: (visitorId, roomToken) =>
       request("chat-status.php", { visitor_id: visitorId, room_token: roomToken }),
     sendMessage: (visitorId, roomToken, messageText) =>

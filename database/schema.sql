@@ -30,10 +30,11 @@ CREATE TABLE IF NOT EXISTS chat_rooms (
   room_token VARCHAR(80) NOT NULL UNIQUE,
   visitor_one VARCHAR(100) NOT NULL,
   visitor_two VARCHAR(100) NULL,
+  chat_mode ENUM('text', 'video') NOT NULL DEFAULT 'text',
   status ENUM('waiting', 'active', 'ended') NOT NULL DEFAULT 'waiting',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_chat_status (status, updated_at),
+  INDEX idx_chat_status (status, chat_mode, updated_at),
   INDEX idx_chat_visitor_one (visitor_one),
   INDEX idx_chat_visitor_two (visitor_two)
 );
@@ -73,3 +74,6 @@ CREATE TABLE IF NOT EXISTS online_users (
   INDEX idx_online_last_seen (last_seen),
   INDEX idx_online_country_state (country, state)
 );
+
+ALTER TABLE chat_rooms
+  ADD COLUMN IF NOT EXISTS chat_mode ENUM('text', 'video') NOT NULL DEFAULT 'text' AFTER visitor_two;
