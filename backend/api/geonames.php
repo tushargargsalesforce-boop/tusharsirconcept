@@ -5,15 +5,13 @@ require_once __DIR__ . '/helpers.php';
 
 require_post();
 $data = read_json_body();
-$username = trim((string)(getenv('GEONAMES_USERNAME') ?: ''));
-
 load_env_file(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env');
-$username = trim((string)(getenv('GEONAMES_USERNAME') ?: $username));
+$username = trim((string)(getenv('GEONAMES_USERNAME') ?: ''));
 
 if ($username === '') {
     json_response([
         'success' => false,
-        'message' => 'GeoNames username missing. Add GEONAMES_USERNAME in .env.',
+        'message' => 'GeoNames username missing. Add GEONAMES_USERNAME in the project .env file on this server.',
     ], 500);
 }
 

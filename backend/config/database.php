@@ -40,6 +40,10 @@ function get_pdo(): PDO
     $username = $config['username'];
     $password = $config['password'];
 
+    if ($database === '' || $username === '') {
+        throw new DatabaseConfigException('Database config missing. Add DB_DATABASE and DB_USERNAME in the project .env file or hosting environment.');
+    }
+
     if ($username !== 'root' && $password === '') {
         throw new DatabaseConfigException('Database password missing. Add DB_PASSWORD in the project .env file or hosting environment.');
     }
@@ -58,8 +62,8 @@ function get_db_config(): array
     return [
         'host' => getenv('DB_HOST') ?: 'localhost',
         'port' => getenv('DB_PORT') ?: '3306',
-        'database' => getenv('DB_DATABASE') ?: 'xrqnafrj_dating_invitation',
-        'username' => getenv('DB_USERNAME') ?: 'xrqnafrj_sarthak_singhal',
-        'password' => getenv('DB_PASSWORD') ?: 'Sarthak@2026#MySQL',
+        'database' => getenv('DB_DATABASE') ?: '',
+        'username' => getenv('DB_USERNAME') ?: '',
+        'password' => getenv('DB_PASSWORD') ?: '',
     ];
 }
