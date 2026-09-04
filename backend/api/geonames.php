@@ -119,7 +119,7 @@ json_response(['success' => false, 'message' => 'Invalid GeoNames action'], 422)
 
 function geonames_request(string $service, array $params): array
 {
-    $url = 'https://secure.geonames.org/' . $service . '?' . http_build_query($params);
+    $url = 'http://api.geonames.org/' . $service . '?' . http_build_query($params);
     $body = http_get($url);
 
     if ($body === '') {
@@ -158,7 +158,7 @@ function http_get(string $url): string
         $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
 
-        if ($body === false || $status >= 400) {
+        if ($body === false) {
             error_log('GeoNames cURL failed: ' . ($error !== '' ? $error : 'HTTP ' . $status));
             return '';
         }
