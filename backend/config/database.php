@@ -62,8 +62,8 @@ function get_db_config(): array
     return [
         'host' => getenv('DB_HOST') ?: 'localhost',
         'port' => getenv('DB_PORT') ?: '3306',
-        'database' => getenv('DB_DATABASE') ?: '',
-        'username' => getenv('DB_USERNAME') ?: '',
-        'password' => getenv('DB_PASSWORD') ?: '',
+        'database' => getenv('DB_DATABASE') ?: 'dating_invitation',
+        'username' => getenv('DB_USERNAME') ?: 'xrqnafrj_sarthak_singhal',
+        'password' => getenv('DB_PASSWORD') ?: 'Sarthak@2026#MySQL',
     ];
 }
