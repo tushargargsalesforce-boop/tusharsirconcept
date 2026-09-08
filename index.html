@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="public/css/style.css?v=20260909-chat-labels">
+  <link rel="stylesheet" href="public/css/style.css?v=20260909-call-layout">
 </head>
 <body>
   <div class="petal-field" aria-hidden="true"></div>
@@ -135,33 +135,39 @@
         </div>
         <p class="tiny-note">Adults only. One click connects you with a random person. Skip anytime.</p>
         <div class="chat-status" id="chatStatus">Not connected</div>
-        <div class="video-grid" id="videoGrid">
-          <div class="video-tile">
-            <video id="localVideo" muted playsinline autoplay></video>
-            <span class="video-label">You</span>
+        <div class="call-workspace" id="callWorkspace">
+          <div class="call-stage">
+            <div class="video-grid" id="videoGrid">
+              <div class="video-tile">
+                <video id="localVideo" muted playsinline autoplay></video>
+                <span class="video-label">You</span>
+              </div>
+              <div class="video-tile">
+                <video id="remoteVideo" playsinline autoplay></video>
+                <span class="video-label">Random person</span>
+              </div>
+            </div>
+            <div class="chat-media-controls">
+              <button class="secondary-btn compact-btn" id="micToggleBtn" type="button" disabled>mic on</button>
+              <button class="secondary-btn compact-btn" id="cameraToggleBtn" type="button" disabled>camera on</button>
+              <button class="secondary-btn compact-btn" id="speakerToggleBtn" type="button" disabled>speaker on</button>
+              <button class="secondary-btn compact-btn" id="fullscreenVideoBtn" type="button" disabled>full screen</button>
+            </div>
+            <div class="chat-actions">
+              <button class="primary-btn compact-btn" id="findChatBtn" type="button" disabled>find person</button>
+              <button class="secondary-btn compact-btn" id="skipChatBtn" type="button" disabled>skip</button>
+              <button class="secondary-btn compact-btn" id="videoChatBtn" type="button" disabled>start video</button>
+              <button class="secondary-btn compact-btn" id="leaveChatBtn" type="button" disabled>leave</button>
+            </div>
           </div>
-          <div class="video-tile">
-            <video id="remoteVideo" playsinline autoplay></video>
-            <span class="video-label">Random person</span>
-          </div>
+          <aside class="call-chat" aria-label="Chat messages">
+            <div class="messages" id="messages"></div>
+            <form class="message-form" id="messageForm">
+              <input id="messageInput" type="text" maxlength="1000" placeholder="type a sweet message..." autocomplete="off" disabled>
+              <button class="primary-btn send-btn" type="submit" disabled>send</button>
+            </form>
+          </aside>
         </div>
-        <div class="chat-media-controls">
-          <button class="secondary-btn compact-btn" id="micToggleBtn" type="button" disabled>mic on</button>
-          <button class="secondary-btn compact-btn" id="cameraToggleBtn" type="button" disabled>camera on</button>
-          <button class="secondary-btn compact-btn" id="speakerToggleBtn" type="button" disabled>speaker on</button>
-          <button class="secondary-btn compact-btn" id="fullscreenVideoBtn" type="button" disabled>full screen</button>
-        </div>
-        <div class="chat-actions">
-          <button class="primary-btn compact-btn" id="findChatBtn" type="button" disabled>find person</button>
-          <button class="secondary-btn compact-btn" id="skipChatBtn" type="button" disabled>skip</button>
-          <button class="secondary-btn compact-btn" id="videoChatBtn" type="button" disabled>start video</button>
-          <button class="secondary-btn compact-btn" id="leaveChatBtn" type="button" disabled>leave</button>
-        </div>
-        <div class="messages" id="messages"></div>
-        <form class="message-form" id="messageForm">
-          <input id="messageInput" type="text" maxlength="1000" placeholder="type a sweet message..." autocomplete="off" disabled>
-          <button class="primary-btn send-btn" type="submit" disabled>send</button>
-        </form>
         <p class="error-message" id="chatError"></p>
       </div>
     </section>
@@ -169,6 +175,6 @@
 
   <script src="public/js/api.js?v=20260908-flow"></script>
   <script src="public/js/animations.js?v=20260908-flow"></script>
-  <script src="public/js/app.js?v=20260909-video-fix"></script>
+  <script src="public/js/app.js?v=20260909-call-layout"></script>
 </body>
 </html>

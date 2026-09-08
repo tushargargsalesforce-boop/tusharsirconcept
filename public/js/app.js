@@ -433,11 +433,14 @@ function updateMediaButtons() {
   const micButton = document.getElementById("micToggleBtn");
   const cameraButton = document.getElementById("cameraToggleBtn");
   const speakerButton = document.getElementById("speakerToggleBtn");
+  const fullscreenButton = document.getElementById("fullscreenVideoBtn");
   const hasStream = Boolean(localStream);
+  const hasVideo = Boolean(document.getElementById("remoteVideo").srcObject || localStream);
 
   micButton.disabled = !hasStream;
   cameraButton.disabled = !hasStream;
   speakerButton.disabled = !document.getElementById("remoteVideo").srcObject;
+  fullscreenButton.disabled = !hasVideo;
   micButton.textContent = micEnabled ? "mic on" : "mic off";
   cameraButton.textContent = cameraEnabled ? "camera on" : "camera off";
   speakerButton.textContent = speakerEnabled ? "speaker on" : "speaker off";
@@ -484,6 +487,8 @@ function resetChatUi() {
   setChatStatus("Not connected");
   document.getElementById("messages").innerHTML = "";
   document.getElementById("videoChatBtn").textContent = "start video";
+  document.querySelector(".chat-panel").classList.remove("focus-mode");
+  document.getElementById("fullscreenVideoBtn").textContent = "full screen";
   stopVideo();
   updatePermissionButton();
   updateMediaButtons();
@@ -1068,6 +1073,13 @@ document.getElementById("speakerToggleBtn").addEventListener("click", () => {
   const remoteVideo = document.getElementById("remoteVideo");
   remoteVideo.muted = !speakerEnabled;
   updateMediaButtons();
+});
+
+document.getElementById("fullscreenVideoBtn").addEventListener("click", () => {
+  const panel = document.querySelector(".chat-panel");
+  const isFocused = panel.classList.toggle("focus-mode");
+  const button = document.getElementById("fullscreenVideoBtn");
+  button.textContent = isFocused ? "exit focus" : "full screen";
 });
 
 document.getElementById("leaveChatBtn").addEventListener("click", leaveCurrentChat);
