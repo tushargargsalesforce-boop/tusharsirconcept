@@ -16,6 +16,7 @@ let lastSignalId = 0;
 let peerConnection = null;
 let localStream = null;
 let videoStarted = false;
+let videoStartInProgress = false;
 let chatMode = "text";
 let chatAccessApproved = false;
 let mediaAccessApproved = false;
@@ -446,7 +447,15 @@ function addMessageBubble(message) {
   const messages = document.getElementById("messages");
   const bubble = document.createElement("div");
   bubble.className = `message ${message.sender}`;
-  bubble.textContent = message.message_text;
+
+  const senderLabel = document.createElement("small");
+  senderLabel.className = "message-sender";
+  senderLabel.textContent = message.sender === "you" ? "You" : "Stranger";
+
+  const messageText = document.createElement("span");
+  messageText.textContent = message.message_text;
+  bubble.append(senderLabel, messageText);
+
   messages.appendChild(bubble);
   messages.scrollTop = messages.scrollHeight;
 }
@@ -469,6 +478,7 @@ function resetChatUi() {
   lastMessageId = 0;
   lastSignalId = 0;
   videoStarted = false;
+  videoStartInProgress = false;
   chatSearchInProgress = false;
   setChatEnabled(false);
   setChatStatus("Not connected");
@@ -746,7 +756,7 @@ async function createPeerConnection() {
 }
 
 async function startVideo() {
-  if (!chatRoomToken || videoStarted) return;
+  if (!chatRoomToken || videoStarted || videoStartInProgress) return;
 
   const unavailableMessage = mediaUnavailableMessage();
   if (unavailableMessage) {
@@ -754,19 +764,24 @@ async function startVideo() {
     return;
   }
 
+  videoStartInProgress = true;
+
   try {
     const connection = await createPeerConnection();
     videoStarted = true;
     document.getElementById("videoChatBtn").textContent = "video on";
     startSignalPolling();
 
-    if (chatIsCreator) {
+    if (chatIsCreator && connection.signalingState === "stable" && !connection.localDescription) {
       const offer = await connection.createOffer();
       await connection.setLocalDescription(offer);
       await DatingApi.sendSignal(visitorId, chatRoomToken, "offer", offer);
     }
   } catch (error) {
+    videoStarted = false;
     setError("chatError", error.message);
+  } finally {
+    videoStartInProgress = false;
   }
 }
 
