@@ -87,6 +87,8 @@ function database_error_message(PDOException $exception): string
     return match ($mysqlCode) {
         1044, 1045 => 'Database login failed. Check DB username, password and privileges.',
         1049 => 'Database name not found. Check DB_DATABASE.',
+        1051, 1054 => 'Database schema is outdated. Import database/schema.sql again, including the chat_mode column.',
+        1064 => 'Database schema is incompatible with this app. Import database/schema.sql again.',
         1146 => 'Database table missing. Import database/schema.sql again.',
         2002, 2003 => 'Database host unavailable. Check DB_HOST and DB_PORT.',
         default => 'Database unavailable',
