@@ -12,13 +12,20 @@ function load_env_file(string $path): void
     }
 
     $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
     foreach ($lines as $line) {
         $line = trim($line);
-        if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) {
+
+        if (
+            $line === '' ||
+            str_starts_with($line, '#') ||
+            !str_contains($line, '=')
+        ) {
             continue;
         }
 
         [$key, $value] = explode('=', $line, 2);
+
         $key = trim($key);
         $value = trim($value, " \t\n\r\0\x0B\"'");
 
@@ -31,9 +38,12 @@ function load_env_file(string $path): void
 
 function get_pdo(): PDO
 {
-    load_env_file(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env');
+    load_env_file(
+        dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env'
+    );
 
     $config = get_db_config();
+
     $host = $config['host'];
     $port = $config['port'];
     $database = $config['database'];
@@ -41,20 +51,44 @@ function get_pdo(): PDO
     $password = $config['password'];
 
     if ($database === '' || $username === '') {
-        throw new DatabaseConfigException('Database config missing. Add DB_DATABASE and DB_USERNAME in the project .env file or hosting environment.');
+        throw new DatabaseConfigException(
+            'Database config missing. Check DB_DATABASE and DB_USERNAME.'
+        );
     }
 
     if ($username !== 'root' && $password === '') {
-        throw new DatabaseConfigException('Database password missing. Add DB_PASSWORD in the project .env file or hosting environment.');
+        throw new DatabaseConfigException(
+            'Database password missing. Check DB_PASSWORD.'
+        );
     }
 
-    $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $database);
+    $dsn = sprintf(
+        'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
+        $host,
+        $port,
+        $database
+    );
 
-    return new PDO($dsn, $username, $password, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
+    try {
+        return new PDO($dsn, $username, $password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+    } catch (PDOException $exception) {
+
+        // TEMPORARY DEBUG
+        // This will show the real MySQL error.
+        error_log(
+            'DATABASE ERROR: ' .
+            $exception->getMessage()
+        );
+
+        throw new PDOException(
+            'PDO ERROR: ' .
+            $exception->getMessage()
+        );
+    }
 }
 
 function get_db_config(): array
