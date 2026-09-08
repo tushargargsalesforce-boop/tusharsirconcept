@@ -26,7 +26,7 @@ let cameraEnabled = true;
 let speakerEnabled = true;
 let faceMonitorTimer = null;
 let faceMissingSince = 0;
-let faceReconnectInProgress = false;
+let faceWarningInProgress = false;
 let faceDetector = null;
 
 function readSavedState() {
@@ -506,21 +506,23 @@ function startFaceVisibilityMonitor() {
       }
 
       if (!faceMissingSince) faceMissingSince = Date.now();
-      if (Date.now() - faceMissingSince >= 5000) await reconnectAfterHiddenFace();
+      if (Date.now() - faceMissingSince >= 5000) {
+        await warnAboutHiddenFace();
+        faceMissingSince = 0;
+      }
     } catch (error) {
       stopFaceVisibilityMonitor();
     }
   }, 1800);
 }
 
-async function reconnectAfterHiddenFace() {
-  if (faceReconnectInProgress || !chatRoomToken) return;
+async function warnAboutHiddenFace() {
+  if (faceWarningInProgress || !chatRoomToken) return;
 
-  faceReconnectInProgress = true;
-  const roomToLeave = chatRoomToken;
+  faceWarningInProgress = true;
   const guard = document.getElementById("visibilityGuard");
   document.getElementById("visibilityMessage").textContent =
-    "The other person’s face is not visible. Reconnecting you to someone else.";
+    "The other person’s face is not visible. Please keep your face in the camera.";
   guard.hidden = false;
 
   for (let seconds = 5; seconds > 0; seconds -= 1) {
@@ -528,16 +530,8 @@ async function reconnectAfterHiddenFace() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
-  try {
-    await DatingApi.leaveChat(visitorId, roomToLeave);
-  } catch (error) {
-    setError("chatError", error.message);
-  }
-
   hideVisibilityGuard();
-  resetChatUi();
-  faceReconnectInProgress = false;
-  await beginRandomChat("Reconnecting you to a new person...");
+  faceWarningInProgress = false;
 }
 
 function resetChatUi() {
@@ -827,7 +821,11 @@ async function createPeerConnection() {
     remoteVideo.play().catch(() => {});
     startFaceVisibilityMonitor();
     event.streams[0]?.getTracks().forEach((track) => {
-      track.addEventListener("ended", () => reconnectAfterHiddenFace(), { once: true });
+      track.addEventListener("ended", () => {
+        if (chatRoomToken) {
+          setError("chatError", "The other person’s camera stopped. You can skip or leave this chat.");
+        }
+      }, { once: true });
     });
     updateMediaButtons();
   };
