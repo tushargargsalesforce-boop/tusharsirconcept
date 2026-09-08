@@ -508,6 +508,10 @@ select:focus {
   background: rgba(45, 19, 29, 0.72);
 }
 
+.visibility-guard[hidden] {
+  display: none;
+}
+
 .visibility-card {
   width: min(100%, 560px);
   padding: clamp(26px, 5vw, 56px);
