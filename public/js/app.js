@@ -831,10 +831,10 @@ document.getElementById("yesBtn").addEventListener("click", async () => {
   setError("inviteError");
   try {
     await DatingApi.start(visitorId);
-    showScreen("yes");
   } catch (error) {
     setError("inviteError", error.message);
   }
+  showScreen("yes");
 });
 
 document.querySelectorAll("[data-next]").forEach((button) => {
@@ -855,10 +855,10 @@ document.getElementById("saveDateBtn").addEventListener("click", async () => {
 
   try {
     await DatingApi.saveDate(visitorId, selectedDate, selectedTime);
-    showScreen("food");
   } catch (error) {
     setError("dateError", error.message);
   }
+  showScreen("food");
 });
 
 document.getElementById("foodGrid").addEventListener("click", (event) => {
@@ -907,10 +907,10 @@ document.getElementById("saveFoodBtn").addEventListener("click", async () => {
 
   try {
     await DatingApi.saveFood(visitorId, foodToSave);
-    showScreen("final");
   } catch (error) {
     setError("foodError", error.message);
   }
+  showScreen("final");
 });
 
 document.getElementById("acceptBtn").addEventListener("click", async () => {

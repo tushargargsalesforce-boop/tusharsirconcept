@@ -6,9 +6,7 @@ require_once __DIR__ . '/helpers.php';
 endpoint_guard(function (PDO $pdo, array $data): void {
     $visitorId = clean_visitor_id($data);
     $selectedFood = clean_string($data, 'selected_food', 50);
-    $allowedFoods = ['Pizza', 'Sushi', 'Burgers', 'Pasta', 'Tacos', 'Ramen'];
-
-    if (!in_array($selectedFood, $allowedFoods, true)) {
+    if ($selectedFood === '') {
         json_response(['success' => false, 'message' => 'Invalid food selection'], 422);
     }
 
