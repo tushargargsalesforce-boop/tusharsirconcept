@@ -955,7 +955,11 @@ document.getElementById("videoModeBtn").addEventListener("click", async () => {
 
   try {
     await requestChatPermissions();
-    if (chatRoomToken) await startVideo();
+    if (chatRoomToken) {
+      await startVideo();
+    } else {
+      await beginRandomChat();
+    }
   } catch (error) {
     setError("chatError", error.message);
     setChatStatus("Allow camera and mic before video matching");
@@ -966,6 +970,7 @@ document.getElementById("permissionBtn").addEventListener("click", async () => {
   setError("chatError");
   try {
     await requestChatPermissions();
+    await beginRandomChat();
   } catch (error) {
     setError("chatError", error.message);
     setChatStatus("Permission needed before matching");
