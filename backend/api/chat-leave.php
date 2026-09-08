@@ -11,11 +11,12 @@ endpoint_guard(function (PDO $pdo, array $data): void {
         "UPDATE chat_rooms
          SET status = 'ended'
          WHERE room_token = :room_token
-           AND (visitor_one = :visitor_id OR visitor_two = :visitor_id)"
+           AND (visitor_one = :visitor_one OR visitor_two = :visitor_two)"
     );
     $stmt->execute([
         'room_token' => $roomToken,
-        'visitor_id' => $visitorId,
+        'visitor_one' => $visitorId,
+        'visitor_two' => $visitorId,
     ]);
 
     json_response(['success' => true, 'message' => 'Chat ended']);

@@ -19,9 +19,12 @@ endpoint_guard(function (PDO $pdo, array $data): void {
         "UPDATE chat_rooms
          SET status = 'ended'
          WHERE status IN ('waiting', 'active')
-           AND (visitor_one = :visitor_id OR visitor_two = :visitor_id)"
+           AND (visitor_one = :visitor_one OR visitor_two = :visitor_two)"
     );
-    $cleanup->execute(['visitor_id' => $visitorId]);
+    $cleanup->execute([
+        'visitor_one' => $visitorId,
+        'visitor_two' => $visitorId,
+    ]);
 
     $find = $pdo->prepare(
         "SELECT room_token, visitor_one

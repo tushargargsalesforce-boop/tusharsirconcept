@@ -12,11 +12,12 @@ endpoint_guard(function (PDO $pdo, array $data): void {
         "SELECT id FROM chat_rooms
          WHERE room_token = :room_token
            AND status = 'active'
-           AND (visitor_one = :visitor_id OR visitor_two = :visitor_id)"
+           AND (visitor_one = :visitor_one OR visitor_two = :visitor_two)"
     );
     $room->execute([
         'room_token' => $roomToken,
-        'visitor_id' => $visitorId,
+        'visitor_one' => $visitorId,
+        'visitor_two' => $visitorId,
     ]);
 
     if (!$room->fetch()) {
