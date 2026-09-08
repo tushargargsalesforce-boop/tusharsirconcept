@@ -498,6 +498,52 @@ select:focus {
   text-align: center;
 }
 
+.visibility-guard {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(45, 19, 29, 0.72);
+}
+
+.visibility-card {
+  width: min(100%, 560px);
+  padding: clamp(26px, 5vw, 56px);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--cream);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.visibility-card h2 {
+  margin: 0 0 14px;
+  color: var(--rose);
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+}
+
+.visibility-card p {
+  margin: 0 auto 26px;
+  max-width: 38rem;
+  color: #6c1730;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+.visibility-card strong {
+  display: grid;
+  place-items: center;
+  width: min(100%, 220px);
+  min-height: 100px;
+  margin: 0 auto;
+  border-radius: 18px;
+  background: #a9e2ce;
+  color: white;
+  font-size: clamp(3rem, 8vw, 5rem);
+}
+
 .chat-panel {
   text-align: left;
 }

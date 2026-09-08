@@ -24,6 +24,10 @@ let chatSearchInProgress = false;
 let micEnabled = true;
 let cameraEnabled = true;
 let speakerEnabled = true;
+let faceMonitorTimer = null;
+let faceMissingSince = 0;
+let faceReconnectInProgress = false;
+let faceDetector = null;
 
 function readSavedState() {
   try {
@@ -469,6 +473,73 @@ function stopTimer(timer) {
   }
 }
 
+function stopFaceVisibilityMonitor() {
+  stopTimer(faceMonitorTimer);
+  faceMonitorTimer = null;
+  faceMissingSince = 0;
+}
+
+function hideVisibilityGuard() {
+  document.getElementById("visibilityGuard").hidden = true;
+}
+
+function startFaceVisibilityMonitor() {
+  stopFaceVisibilityMonitor();
+
+  if (!window.FaceDetector) return;
+
+  faceDetector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
+  faceMonitorTimer = setInterval(async () => {
+    const remoteVideo = document.getElementById("remoteVideo");
+
+    if (!chatRoomToken || remoteVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !remoteVideo.videoWidth) {
+      return;
+    }
+
+    try {
+      const faces = await faceDetector.detect(remoteVideo);
+
+      if (faces.length) {
+        faceMissingSince = 0;
+        hideVisibilityGuard();
+        return;
+      }
+
+      if (!faceMissingSince) faceMissingSince = Date.now();
+      if (Date.now() - faceMissingSince >= 5000) await reconnectAfterHiddenFace();
+    } catch (error) {
+      stopFaceVisibilityMonitor();
+    }
+  }, 1800);
+}
+
+async function reconnectAfterHiddenFace() {
+  if (faceReconnectInProgress || !chatRoomToken) return;
+
+  faceReconnectInProgress = true;
+  const roomToLeave = chatRoomToken;
+  const guard = document.getElementById("visibilityGuard");
+  document.getElementById("visibilityMessage").textContent =
+    "The other person’s face is not visible. Reconnecting you to someone else.";
+  guard.hidden = false;
+
+  for (let seconds = 5; seconds > 0; seconds -= 1) {
+    document.getElementById("visibilityCountdown").textContent = String(seconds);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  try {
+    await DatingApi.leaveChat(visitorId, roomToLeave);
+  } catch (error) {
+    setError("chatError", error.message);
+  }
+
+  hideVisibilityGuard();
+  resetChatUi();
+  faceReconnectInProgress = false;
+  await beginRandomChat("Reconnecting you to a new person...");
+}
+
 function resetChatUi() {
   stopTimer(chatStatusTimer);
   stopTimer(messageTimer);
@@ -483,6 +554,8 @@ function resetChatUi() {
   videoStarted = false;
   videoStartInProgress = false;
   chatSearchInProgress = false;
+  stopFaceVisibilityMonitor();
+  hideVisibilityGuard();
   setChatEnabled(false);
   setChatStatus("Not connected");
   document.getElementById("messages").innerHTML = "";
@@ -752,6 +825,10 @@ async function createPeerConnection() {
     remoteVideo.srcObject = event.streams[0];
     remoteVideo.muted = !speakerEnabled;
     remoteVideo.play().catch(() => {});
+    startFaceVisibilityMonitor();
+    event.streams[0]?.getTracks().forEach((track) => {
+      track.addEventListener("ended", () => reconnectAfterHiddenFace(), { once: true });
+    });
     updateMediaButtons();
   };
 

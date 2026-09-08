@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="public/css/style.css?v=20260909-call-layout-2">
+  <link rel="stylesheet" href="public/css/style.css?v=20260909-face-guard">
 </head>
 <body>
   <div class="petal-field" aria-hidden="true"></div>
@@ -173,8 +173,16 @@
     </section>
   </main>
 
+  <div class="visibility-guard" id="visibilityGuard" hidden>
+    <div class="visibility-card" role="alertdialog" aria-live="assertive">
+      <h2>Are you there?</h2>
+      <p id="visibilityMessage">Please keep your face visible so the other person can see you.</p>
+      <strong id="visibilityCountdown">5</strong>
+    </div>
+  </div>
+
   <script src="public/js/api.js?v=20260908-flow"></script>
   <script src="public/js/animations.js?v=20260908-flow"></script>
-  <script src="public/js/app.js?v=20260909-call-layout-2"></script>
+  <script src="public/js/app.js?v=20260909-face-guard"></script>
 </body>
 </html>
