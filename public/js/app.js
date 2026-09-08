@@ -67,6 +67,7 @@ function renderScreen(name) {
   screens.forEach((screen) => {
     screen.classList.toggle("active", screen.dataset.screen === name);
   });
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   saveState({ screen: name });
 }
 
