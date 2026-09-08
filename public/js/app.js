@@ -480,11 +480,13 @@ function stopFaceVisibilityMonitor() {
 }
 
 function hideVisibilityGuard() {
-  document.getElementById("visibilityGuard").hidden = true;
+  const guard = document.getElementById("visibilityGuard");
+  if (guard) guard.hidden = true;
 }
 
 function startFaceVisibilityMonitor() {
   stopFaceVisibilityMonitor();
+  return;
 
   if (!window.FaceDetector) return;
 
