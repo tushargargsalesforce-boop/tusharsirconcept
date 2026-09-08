@@ -1,5 +1,7 @@
 const screens = [...document.querySelectorAll(".screen")];
 const visitorId = getVisitorId();
+const stateStorageKey = `dating_app_state_${visitorId}`;
+const validScreens = new Set(screens.map((screen) => screen.dataset.screen));
 let selectedFood = "";
 let selectedTownPoint = null;
 let chatRoomToken = "";
@@ -21,6 +23,21 @@ let chatSearchInProgress = false;
 let micEnabled = true;
 let cameraEnabled = true;
 let speakerEnabled = true;
+
+function readSavedState() {
+  try {
+    return JSON.parse(localStorage.getItem(stateStorageKey) || "{}");
+  } catch (error) {
+    return {};
+  }
+}
+
+const savedState = readSavedState();
+
+function saveState(patch = {}) {
+  Object.assign(savedState, patch);
+  localStorage.setItem(stateStorageKey, JSON.stringify(savedState));
+}
 
 function getVisitorId() {
   const existing = localStorage.getItem("dating_visitor_id");
@@ -45,10 +62,46 @@ function generateIdPart(length) {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`.slice(0, length);
 }
 
-function showScreen(name) {
+function renderScreen(name) {
+  if (!validScreens.has(name)) return;
   screens.forEach((screen) => {
     screen.classList.toggle("active", screen.dataset.screen === name);
   });
+  saveState({ screen: name });
+}
+
+function showScreen(name, { replace = false } = {}) {
+  if (!validScreens.has(name)) return;
+  renderScreen(name);
+  const state = { screen: name };
+  if (replace) {
+    window.history.replaceState(state, "", window.location.href);
+  } else {
+    window.history.pushState(state, "", window.location.href);
+  }
+}
+
+function restoreSavedFormState() {
+  const dateInput = document.getElementById("dateInput");
+  const timeInput = document.getElementById("timeInput");
+  const ageInput = document.getElementById("ageInput");
+  const genderSelect = document.getElementById("genderSelect");
+  const adultConfirm = document.getElementById("adultConfirm");
+  const otherFoodInput = document.getElementById("otherFoodInput");
+
+  dateInput.value = savedState.selectedDate || "";
+  timeInput.value = savedState.selectedTime || "";
+  ageInput.value = savedState.age || "";
+  genderSelect.value = savedState.gender || "";
+  adultConfirm.checked = Boolean(savedState.adultConfirmed);
+  selectedFood = savedState.selectedFood || "";
+  otherFoodInput.value = savedState.otherFood || "";
+
+  document.querySelectorAll(".food-card").forEach((card) => {
+    card.classList.toggle("selected", card.dataset.food === selectedFood);
+  });
+  document.getElementById("otherFoodField").hidden = selectedFood !== "Other";
+  chatMode = savedState.chatMode === "video" ? "video" : "text";
 }
 
 function setError(id, message = "") {
@@ -308,13 +361,7 @@ function escapeHtml(value) {
 }
 
 function currentLocationPayload() {
-  return {
-    visitor_id: visitorId,
-    country: selectedGeoName("countrySelect"),
-    state: selectedGeoName("stateSelect"),
-    district: selectedGeoName("districtSelect"),
-    town: selectedGeoName("townSelect"),
-  };
+  return { visitor_id: visitorId };
 }
 
 function renderStatsList(containerId, rows, formatLabel) {
@@ -512,6 +559,14 @@ function updatePermissionButton() {
   }
 
   button.textContent = chatAccessApproved ? "chat access allowed" : "continue to text chat";
+}
+
+function saveChatGateState() {
+  saveState({
+    age: document.getElementById("ageInput").value,
+    gender: document.getElementById("genderSelect").value,
+    adultConfirmed: document.getElementById("adultConfirm").checked,
+  });
 }
 
 function isLocalhostPage() {
@@ -796,6 +851,8 @@ document.getElementById("saveDateBtn").addEventListener("click", async () => {
     return;
   }
 
+  saveState({ selectedDate, selectedTime });
+
   try {
     await DatingApi.saveDate(visitorId, selectedDate, selectedTime);
     showScreen("food");
@@ -809,6 +866,7 @@ document.getElementById("foodGrid").addEventListener("click", (event) => {
   if (!card) return;
 
   selectedFood = card.dataset.food;
+  saveState({ selectedFood });
   document.querySelectorAll(".food-card").forEach((item) => item.classList.remove("selected"));
   card.classList.add("selected");
 
@@ -821,7 +879,20 @@ document.getElementById("foodGrid").addEventListener("click", (event) => {
     otherInput.focus();
   } else {
     otherInput.value = "";
+    saveState({ otherFood: "" });
   }
+});
+
+document.getElementById("dateInput").addEventListener("change", (event) => {
+  saveState({ selectedDate: event.target.value });
+});
+
+document.getElementById("timeInput").addEventListener("change", (event) => {
+  saveState({ selectedTime: event.target.value });
+});
+
+document.getElementById("otherFoodInput").addEventListener("input", (event) => {
+  saveState({ otherFood: event.target.value });
 });
 
 document.getElementById("saveFoodBtn").addEventListener("click", async () => {
@@ -836,40 +907,9 @@ document.getElementById("saveFoodBtn").addEventListener("click", async () => {
 
   try {
     await DatingApi.saveFood(visitorId, foodToSave);
-    showScreen("location");
+    showScreen("final");
   } catch (error) {
     setError("foodError", error.message);
-  }
-});
-
-document.getElementById("saveLocationBtn").addEventListener("click", async () => {
-  const country = selectedGeoName("countrySelect");
-  const state = selectedGeoName("stateSelect");
-  const district = selectedGeoName("districtSelect");
-  const town = selectedGeoName("townSelect");
-  setError("locationError");
-
-  if (!country || !state || !district || !town || !selectedTownPoint) {
-    setError("locationError", "Complete country, state, district and town.");
-    return;
-  }
-
-  try {
-    await DatingApi.saveLocation({
-      visitor_id: visitorId,
-      country,
-      state,
-      district,
-      town,
-      latitude: selectedTownPoint.lat,
-      longitude: selectedTownPoint.lng,
-      search_radius_km: 10,
-    });
-    const response = await DatingApi.matches(visitorId);
-    renderMatches(response.matches || []);
-    showScreen("matches");
-  } catch (error) {
-    setError("locationError", error.message);
   }
 });
 
@@ -899,6 +939,7 @@ document.getElementById("closeOnlinePanel").addEventListener("click", () => {
 
 document.getElementById("textModeBtn").addEventListener("click", () => {
   chatMode = "text";
+  saveState({ chatMode });
   setError("chatError");
   stopVideo();
   updateChatModeUi();
@@ -906,6 +947,7 @@ document.getElementById("textModeBtn").addEventListener("click", () => {
 
 document.getElementById("videoModeBtn").addEventListener("click", async () => {
   chatMode = "video";
+  saveState({ chatMode });
   updateChatModeUi();
   setError("chatError");
 
@@ -939,6 +981,8 @@ document.getElementById("permissionBtn").addEventListener("click", async () => {
 
   gateControl.addEventListener("input", resetGateApproval);
   gateControl.addEventListener("change", resetGateApproval);
+  gateControl.addEventListener("input", saveChatGateState);
+  gateControl.addEventListener("change", saveChatGateState);
 });
 
 document.getElementById("findChatBtn").addEventListener("click", () => beginRandomChat());
@@ -1015,8 +1059,16 @@ window.addEventListener("beforeunload", () => {
   }
 });
 
+window.addEventListener("popstate", (event) => {
+  const name = event.state?.screen;
+  renderScreen(validScreens.has(name) ? name : "invite");
+});
+
 RomanceAnimations.makePetals();
-initLocationControls();
+restoreSavedFormState();
+const initialScreen = validScreens.has(savedState.screen) ? savedState.screen : "invite";
+window.history.replaceState({ screen: initialScreen }, "", window.location.href);
+renderScreen(initialScreen);
 updateChatModeUi();
 updatePermissionButton();
 sendHeartbeat();
