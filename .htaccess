@@ -3,3 +3,8 @@ RewriteEngine On
 # Camera and microphone access require a secure HTTPS context.
 RewriteCond %{HTTPS} !=on
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# Never serve environment variables or other hidden configuration files.
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
