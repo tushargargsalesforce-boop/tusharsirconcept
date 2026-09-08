@@ -1064,7 +1064,7 @@ window.addEventListener("popstate", (event) => {
   renderScreen(validScreens.has(name) ? name : "invite");
 });
 
-RomanceAnimations.makePetals();
+window.RomanceAnimations?.makePetals?.();
 restoreSavedFormState();
 const initialScreen = validScreens.has(savedState.screen) ? savedState.screen : "invite";
 window.history.replaceState({ screen: initialScreen }, "", window.location.href);
