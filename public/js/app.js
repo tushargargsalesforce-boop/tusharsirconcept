@@ -576,12 +576,13 @@ function isLocalhostPage() {
 
 function localVideoUrl() {
   const port = window.location.port ? `:${window.location.port}` : "";
-  return `http://localhost${port}${window.location.pathname}${window.location.search}`;
+  const protocol = isLocalhostPage() ? "http" : "https";
+  return `${protocol}://${window.location.host}${window.location.pathname}${window.location.search}`;
 }
 
 function mediaUnavailableMessage() {
   if (!window.isSecureContext && !isLocalhostPage()) {
-    return `Video needs HTTPS or localhost. Open this page as ${localVideoUrl()} or install SSL for this domain.`;
+    return `Video needs HTTPS. Open ${localVideoUrl()} after SSL is enabled for this domain.`;
   }
 
   if (!navigator.mediaDevices?.getUserMedia) {

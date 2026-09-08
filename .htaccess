@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# Camera and microphone access require a secure HTTPS context.
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
