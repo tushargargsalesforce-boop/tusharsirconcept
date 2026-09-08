@@ -488,6 +488,7 @@ function resetChatUi() {
   document.getElementById("messages").innerHTML = "";
   document.getElementById("videoChatBtn").textContent = "start video";
   document.querySelector(".chat-panel").classList.remove("focus-mode");
+  document.querySelector('[data-screen="stranger-chat"]').classList.remove("focus-screen");
   document.getElementById("fullscreenVideoBtn").textContent = "full screen";
   stopVideo();
   updatePermissionButton();
@@ -1077,7 +1078,9 @@ document.getElementById("speakerToggleBtn").addEventListener("click", () => {
 
 document.getElementById("fullscreenVideoBtn").addEventListener("click", () => {
   const panel = document.querySelector(".chat-panel");
+  const screen = document.querySelector('[data-screen="stranger-chat"]');
   const isFocused = panel.classList.toggle("focus-mode");
+  screen.classList.toggle("focus-screen", isFocused);
   const button = document.getElementById("fullscreenVideoBtn");
   button.textContent = isFocused ? "exit focus" : "full screen";
 });

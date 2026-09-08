@@ -176,6 +176,10 @@ select {
   animation: floatIn 440ms ease both;
 }
 
+.screen.focus-screen {
+  width: min(100%, 1180px);
+}
+
 .panel {
   width: 100%;
   padding: clamp(28px, 6vw, 42px);
