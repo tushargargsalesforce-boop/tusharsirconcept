@@ -791,10 +791,12 @@ function resetChatUi() {
 function startMessagePolling() {
   stopTimer(messageTimer);
   messageTimer = setInterval(async () => {
-    if (!chatRoomToken) return;
+    const roomToken = chatRoomToken;
+    if (!roomToken) return;
 
     try {
-      const response = await DatingApi.messages(visitorId, chatRoomToken, lastMessageId);
+      const response = await DatingApi.messages(visitorId, roomToken, lastMessageId);
+      if (roomToken !== chatRoomToken) return;
       response.messages.forEach((message) => {
         lastMessageId = Math.max(lastMessageId, message.id);
         addMessageBubble(message);
@@ -806,10 +808,14 @@ function startMessagePolling() {
 }
 
 async function pollChatStatus() {
-  if (!chatRoomToken) return;
+  const roomToken = chatRoomToken;
+  if (!roomToken) return;
 
   try {
-    const response = await DatingApi.chatStatus(visitorId, chatRoomToken);
+    const response = await DatingApi.chatStatus(visitorId, roomToken);
+    // A previous room can finish while a new matching request is in flight.
+    // Ignore that stale response instead of replacing the current chat status.
+    if (roomToken !== chatRoomToken) return;
     chatIsCreator = response.is_creator;
 
     if (response.status === "active" && response.has_partner) {
