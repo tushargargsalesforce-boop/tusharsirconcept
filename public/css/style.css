@@ -128,6 +128,27 @@ body.dark-app .video-label {
   background: rgba(9, 19, 38, .86);
 }
 
+body.dark-app .radius-control,
+body.dark-app .approx-map,
+body.dark-app .approx-map.ready {
+  border-color: #354056;
+  background-color: #121b2d;
+}
+
+body.dark-app .map-status {
+  color: #a9b1c2;
+}
+
+body.dark-app .map-ring {
+  border-color: rgba(109, 157, 248, .7);
+  background: rgba(109, 157, 248, .08);
+}
+
+body.dark-app .match-item {
+  border-color: #354056;
+  background: #121b2d;
+}
+
 body.dark-app .secondary-btn,
 body.dark-app .mode-tab {
   border-color: #46526b;

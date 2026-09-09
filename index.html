@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="public/css/style.css?v=20260909-full-chat-theme">
+  <link rel="stylesheet" href="public/css/style.css?v=20260909-location-back-fix">
 </head>
 <body>
   <div class="petal-field" aria-hidden="true"></div>
@@ -169,6 +169,40 @@
       </div>
     </section>
 
+    <section class="screen" data-screen="location">
+      <div class="panel location-panel">
+        <h2>Find nearby maybes 💞</h2>
+        <p class="tiny-note">Choose an approximate area. Exact locations are never shared.</p>
+        <div class="select-stack">
+          <label for="countrySelect">Country</label>
+          <select id="countrySelect"></select>
+          <label for="stateSelect">State</label>
+          <select id="stateSelect" disabled></select>
+          <label for="districtSelect">District</label>
+          <select id="districtSelect" disabled></select>
+          <label for="townSelect">Town</label>
+          <select id="townSelect" disabled></select>
+        </div>
+        <div class="radius-control"><span>Search radius</span><strong>10 km</strong></div>
+        <div class="approx-map" id="approxMap" aria-label="Approximate nearby match map">
+          <div class="map-ring"></div>
+          <div class="map-pin user-pin">You</div>
+          <p class="map-status" id="mapStatus">Select your town to preview the 10 km area.</p>
+        </div>
+        <button class="primary-btn" id="saveLocationBtn" type="button">show nearby matches 💘</button>
+        <p class="error-message" id="locationError"></p>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="matches">
+      <div class="panel match-panel">
+        <h2>Soft matches around you 💌</h2>
+        <p class="tiny-note">Only approximate area details are shown.</p>
+        <div class="match-list" id="matchList"></div>
+        <button class="primary-btn" data-next="final" type="button">continue →</button>
+      </div>
+    </section>
+
     <section class="screen" data-screen="final">
       <div class="panel">
         <h2>glad you didn't say no. be ready by 6, I'm coming to get you 🚗</h2>
@@ -247,6 +281,6 @@
 
   <script src="public/js/api.js?v=20260908-flow"></script>
   <script src="public/js/animations.js?v=20260908-flow"></script>
-  <script src="public/js/app.js?v=20260909-home-navigation"></script>
+  <script src="public/js/app.js?v=20260909-location-back-fix"></script>
 </body>
 </html>

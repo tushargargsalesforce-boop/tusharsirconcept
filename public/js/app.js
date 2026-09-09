@@ -82,10 +82,12 @@ function showScreen(name, { replace = false } = {}) {
   if (!validScreens.has(name)) return;
   renderScreen(name);
   const state = { screen: name };
+  const url = new URL(window.location.href);
+  url.searchParams.set("screen", name);
   if (replace) {
-    window.history.replaceState(state, "", window.location.href);
+    window.history.replaceState(state, "", url);
   } else {
-    window.history.pushState(state, "", window.location.href);
+    window.history.pushState(state, "", url);
   }
 }
 
@@ -369,7 +371,13 @@ function escapeHtml(value) {
 }
 
 function currentLocationPayload() {
-  return { visitor_id: visitorId };
+  return {
+    visitor_id: visitorId,
+    country: savedState.country || "",
+    state: savedState.state || "",
+    district: savedState.district || "",
+    town: savedState.town || "",
+  };
 }
 
 function renderStatsList(containerId, rows, formatLabel) {
@@ -1030,7 +1038,41 @@ document.getElementById("saveFoodBtn").addEventListener("click", async () => {
   } catch (error) {
     setError("foodError", error.message);
   }
-  showScreen("final");
+  showScreen("location");
+});
+
+document.getElementById("saveLocationBtn").addEventListener("click", async () => {
+  setError("locationError");
+  const country = selectedGeoName("countrySelect");
+  const state = selectedGeoName("stateSelect");
+  const district = selectedGeoName("districtSelect");
+  const town = selectedGeoName("townSelect");
+
+  if (!country || !state || !district || !town || !selectedTownPoint) {
+    setError("locationError", "Choose your country, state, district, and town.");
+    return;
+  }
+
+  saveState({ country, state, district, town });
+
+  try {
+    await DatingApi.saveLocation({
+      visitor_id: visitorId,
+      country,
+      state,
+      district,
+      town,
+      latitude: selectedTownPoint.lat,
+      longitude: selectedTownPoint.lng,
+      search_radius_km: 10,
+    });
+    const response = await DatingApi.matches(visitorId);
+    renderMatches(response.matches || []);
+    await sendHeartbeat();
+    showScreen("matches");
+  } catch (error) {
+    setError("locationError", error.message);
+  }
 });
 
 document.getElementById("acceptBtn").addEventListener("click", async () => {
@@ -1194,15 +1236,22 @@ window.addEventListener("beforeunload", () => {
 });
 
 window.addEventListener("popstate", (event) => {
-  const name = event.state?.screen;
+  const name = event.state?.screen || new URLSearchParams(window.location.search).get("screen");
   renderScreen(validScreens.has(name) ? name : "invite");
 });
 
 window.RomanceAnimations?.makePetals?.();
+initLocationControls();
 restoreSavedFormState();
-const initialScreen = validScreens.has(savedState.screen) ? savedState.screen : "invite";
-window.history.replaceState({ screen: "invite" }, "", window.location.href);
-window.history.pushState({ screen: initialScreen }, "", window.location.href);
+const urlScreen = new URLSearchParams(window.location.search).get("screen");
+const initialScreen = validScreens.has(urlScreen)
+  ? urlScreen
+  : validScreens.has(savedState.screen)
+    ? savedState.screen
+    : "invite";
+const initialUrl = new URL(window.location.href);
+initialUrl.searchParams.set("screen", initialScreen);
+window.history.replaceState({ screen: initialScreen }, "", initialUrl);
 renderScreen(initialScreen);
 updateChatModeUi();
 updatePermissionButton();
