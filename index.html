@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="public/css/style.css?v=20260909-reference-landing">
+  <link rel="stylesheet" href="public/css/style.css?v=20260909-reference-chat">
 </head>
 <body>
   <div class="petal-field" aria-hidden="true"></div>
@@ -227,17 +227,13 @@
       <div class="panel chat-panel">
         <h2>Stranger live chat 💬</h2>
         <div class="chat-gate" id="chatGate">
-          <div class="gate-grid">
-            <label for="ageInput">Age</label>
-            <input id="ageInput" type="number" min="18" max="99" placeholder="18+ only">
-            <label for="genderSelect">I am</label>
-            <select id="genderSelect">
-              <option value="">choose...</option>
-              <option value="girl">Girl</option>
-              <option value="boy">Boy</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
+          <label class="chat-field" for="ageInput">Age<input id="ageInput" type="number" min="18" max="99" placeholder="18+ only"></label>
+          <label class="chat-field" for="genderSelect">I am<select id="genderSelect">
+            <option value="">choose...</option>
+            <option value="girl">Girl</option>
+            <option value="boy">Boy</option>
+            <option value="other">Other</option>
+          </select></label>
           <label class="check-row" for="adultConfirm">
             <input id="adultConfirm" type="checkbox">
             <span>I confirm I am 18 or older and will keep the chat respectful.</span>
