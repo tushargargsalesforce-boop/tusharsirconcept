@@ -1515,3 +1515,49 @@ body.dark-app .screen[data-screen="stranger-chat"] .call-chat {
     grid-template-columns: 1fr;
   }
 }
+
+/* Exact desktop home composition: hero copy stays beside the preview card. */
+@media (min-width: 821px) {
+  body:has(.landing-screen.active) .chat-topbar {
+    padding-right: max(24px, calc((100vw - 1380px) / 2));
+    padding-left: max(24px, calc((100vw - 1380px) / 2));
+  }
+
+  body:has(.landing-screen.active) .online-counter {
+    display: none;
+  }
+
+  body:has(.landing-screen.active) .landing-screen {
+    width: min(100%, 1380px);
+  }
+
+  body:has(.landing-screen.active) .landing-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(560px, 1fr) !important;
+    gap: 70px;
+    align-items: center;
+    padding: 92px 0 48px;
+  }
+
+  body:has(.landing-screen.active) .landing-copy {
+    max-width: 635px;
+    text-align: left;
+  }
+
+  body:has(.landing-screen.active) .landing-preview-column {
+    display: grid;
+    max-width: none;
+    margin: 0;
+    gap: 20px;
+  }
+
+  body:has(.landing-screen.active) .preview-video {
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+  }
+
+  body:has(.landing-screen.active) .preview-video img {
+    width: 86%;
+    max-height: 90%;
+  }
+}
