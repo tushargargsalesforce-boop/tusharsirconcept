@@ -75,5 +75,34 @@ CREATE TABLE IF NOT EXISTS online_users (
   INDEX idx_online_country_state (country, state)
 );
 
+CREATE TABLE IF NOT EXISTS age_consents (
+  visitor_id VARCHAR(100) PRIMARY KEY,
+  accepted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_age_consents_accepted_at (accepted_at)
+);
+
+CREATE TABLE IF NOT EXISTS user_reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  room_token VARCHAR(80) NOT NULL,
+  reporter_id VARCHAR(100) NOT NULL,
+  reported_id VARCHAR(100) NOT NULL,
+  reason VARCHAR(60) NOT NULL,
+  detail VARCHAR(600) NULL,
+  status ENUM('new', 'reviewing', 'actioned', 'dismissed') NOT NULL DEFAULT 'new',
+  moderator_action VARCHAR(255) NULL,
+  actioned_at TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_reports_status_created (status, created_at),
+  INDEX idx_reports_reported (reported_id, created_at)
+);
+
+CREATE TABLE IF NOT EXISTS chat_blocks (
+  blocker_id VARCHAR(100) NOT NULL,
+  blocked_id VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (blocker_id, blocked_id),
+  INDEX idx_blocks_blocked (blocked_id)
+);
+
 ALTER TABLE chat_rooms
   ADD COLUMN IF NOT EXISTS chat_mode ENUM('text', 'video') NOT NULL DEFAULT 'text' AFTER visitor_two;

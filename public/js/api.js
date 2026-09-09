@@ -70,5 +70,8 @@
     geonames: (payload) => request("geonames.php", payload),
     nearbyPlaces: (payload) => request("nearby-places.php", payload),
     placeDetails: (placeId) => request("place-details.php", { place_id: placeId }),
+    recordConsent: (visitorId) => request("age-consent.php", { visitor_id: visitorId }),
+    reportUser: (visitorId, roomToken, reason, detail) => request("report.php", { visitor_id: visitorId, room_token: roomToken, reason, detail }),
+    blockUser: (visitorId, roomToken) => request("block.php", { visitor_id: visitorId, room_token: roomToken }),
   };
 })();

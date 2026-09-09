@@ -32,6 +32,11 @@ endpoint_guard(function (PDO $pdo, array $data): void {
          WHERE status = 'waiting'
            AND visitor_one <> :visitor_id
            AND chat_mode = :chat_mode
+           AND NOT EXISTS (
+             SELECT 1 FROM chat_blocks
+             WHERE (blocker_id = :blocker_id AND blocked_id = chat_rooms.visitor_one)
+                OR (blocker_id = chat_rooms.visitor_one AND blocked_id = :blocked_id)
+           )
            AND updated_at > (NOW() - INTERVAL 10 MINUTE)
          ORDER BY created_at ASC
          LIMIT 1
@@ -40,6 +45,8 @@ endpoint_guard(function (PDO $pdo, array $data): void {
     $find->execute([
         'visitor_id' => $visitorId,
         'chat_mode' => $chatMode,
+        'blocker_id' => $visitorId,
+        'blocked_id' => $visitorId,
     ]);
     $room = $find->fetch();
 

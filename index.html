@@ -13,6 +13,16 @@
   <link rel="stylesheet" href="public/css/style.css?v=20260909-real-cafe-results">
 </head>
 <body>
+  <section class="age-gate" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="ageGateTitle">
+    <div class="age-gate-card">
+      <span class="age-gate-kicker">Talkifi safety check</span>
+      <h1 id="ageGateTitle">18+ Only</h1>
+      <p>Talkifi is intended only for adults aged 18 years and above. By entering this website, you confirm that you are at least 18 years old.</p>
+      <label class="check-row age-gate-check"><input id="ageGateConfirm" type="checkbox"><span>I confirm that I am 18 years or older and agree to the <a href="terms/">Terms</a>, <a href="privacy/">Privacy Policy</a>, and <a href="community-guidelines/">Community Guidelines</a>.</span></label>
+      <div class="age-gate-actions"><button class="primary-btn" id="enterTalkifiBtn" type="button">I am 18 or older - Enter Talkifi</button><button class="secondary-btn" id="underAgeBtn" type="button">I am under 18 - Exit</button></div>
+      <p class="error-message" id="ageGateError"></p>
+    </div>
+  </section>
   <div class="petal-field" aria-hidden="true"></div>
 
   <header class="chat-topbar">
@@ -24,10 +34,10 @@
     <nav class="landing-nav" aria-label="Main navigation">
       <a href="#how-it-works">How it works</a>
       <a href="#safety">Safety</a>
-      <a href="#terms">Terms</a>
+      <a href="terms/">Terms</a>
     </nav>
     <div class="landing-account-actions">
-      <a href="#terms">Sign in</a>
+      <a href="privacy/">Privacy</a>
       <button type="button" data-next="stranger-chat">Create account</button>
     </div>
     <button class="online-counter" id="onlineCounter" type="button">0 online now</button>
@@ -78,7 +88,7 @@
       <div class="landing-terms" id="terms">
         <strong>¶ &nbsp; Terms &amp; Conditions</strong>
         <div class="terms-grid"><p>1. You must be 18 or older to use Talkifi and its video or dating features.</p><p>2. Be kind and respectful. Harassment, hate speech, or illegal content gets an instant ban.</p><p>3. Recordings and screenshots of any chat are strictly prohibited.</p><p>4. Report any user at any time; verified reports are reviewed within 24 hours.</p><p>5. By connecting you agree to the privacy policy and release of non-sensitive metadata.</p><p>6. Services may change without notice. Keep your account details private and secure.</p></div>
-        <div class="terms-links"><a href="#terms-details">Privacy Policy</a><a href="#safety">Community Guidelines</a><a href="#terms">Cookie Settings</a><a href="#how-it-works">Contact Support</a></div>
+        <div class="terms-links"><a href="privacy/">Privacy Policy</a><a href="community-guidelines/">Community Guidelines</a><a href="grievance/">Grievance &amp; Complaints</a><a href="contact/">Contact Support</a></div>
       </div>
       <section class="landing-docs" aria-label="Talkifi information">
         <article class="landing-doc" id="how-it-works">
@@ -258,6 +268,8 @@
               <button class="primary-btn compact-btn" id="findChatBtn" type="button" disabled>find person</button>
               <button class="secondary-btn compact-btn" id="skipChatBtn" type="button" disabled>skip</button>
               <button class="secondary-btn compact-btn" id="videoChatBtn" type="button" disabled>start video</button>
+              <button class="secondary-btn compact-btn safety-action" id="reportUserBtn" type="button" disabled>report</button>
+              <button class="secondary-btn compact-btn safety-action" id="blockUserBtn" type="button" disabled>block</button>
               <button class="secondary-btn compact-btn" id="leaveChatBtn" type="button" disabled>leave</button>
             </div>
           </div>
@@ -274,8 +286,21 @@
     </section>
   </main>
 
-  <script src="public/js/api.js?v=20260909-geoapify-search"></script>
+  <dialog class="safety-dialog" id="mediaConsentDialog" aria-labelledby="mediaConsentTitle">
+    <div class="dialog-copy"><span class="age-gate-kicker">Optional before video chat</span><h2 id="mediaConsentTitle">Camera &amp; Microphone Access</h2><p>Talkifi requires access to your camera and microphone to provide video communication. Your browser will ask for permission. You can deny or revoke permission at any time.</p></div>
+    <div class="dialog-actions"><button class="primary-btn" id="allowMediaBtn" type="button">Allow Camera &amp; Microphone</button><button class="secondary-btn" id="continueTextBtn" type="button">Continue Without Video</button></div>
+  </dialog>
+
+  <dialog class="safety-dialog" id="reportDialog" aria-labelledby="reportTitle">
+    <form id="reportForm" method="dialog"><div class="dialog-copy"><span class="age-gate-kicker">Safety report</span><h2 id="reportTitle">Why are you reporting this user?</h2><label for="reportReason">Reason</label><select id="reportReason" required><option value="">Choose a reason...</option><option>Harassment</option><option>Scam/Fraud</option><option>Sexual/Explicit Content</option><option>Threats</option><option>Hate/Abuse</option><option>Impersonation</option><option>Suspicious behavior</option><option>Other</option></select><label for="reportDetail">Details (optional)</label><textarea id="reportDetail" maxlength="600" placeholder="Share only what is needed to review this report."></textarea></div><div class="dialog-actions"><button class="primary-btn" type="submit">Submit Report</button><button class="secondary-btn" id="cancelReportBtn" type="button">Cancel</button></div></form>
+  </dialog>
+
+  <dialog class="safety-dialog" id="blockDialog" aria-labelledby="blockTitle">
+    <div class="dialog-copy"><span class="age-gate-kicker">Block user</span><h2 id="blockTitle">Block this user?</h2><p>You will no longer be matched or able to communicate with this user on this device.</p></div><div class="dialog-actions"><button class="primary-btn" id="confirmBlockBtn" type="button">Block</button><button class="secondary-btn" id="cancelBlockBtn" type="button">Cancel</button></div>
+  </dialog>
+
+  <script src="public/js/api.js?v=20260910-safety"></script>
   <script src="public/js/animations.js?v=20260908-flow"></script>
-  <script src="public/js/app.js?v=20260909-live-counter"></script>
+  <script src="public/js/app.js?v=20260910-safety"></script>
 </body>
 </html>

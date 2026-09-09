@@ -500,6 +500,49 @@ select {
   .landing-layout { grid-template-columns: 1fr; padding-top: 35px; }.landing-copy { max-width: none; }.landing-copy h1 { font-size: clamp(3.3rem, 15vw, 5.5rem); }.preview-video { min-height: 230px; }.landing-features, .landing-terms > div { grid-template-columns: 1fr; }.date-teaser button { margin-left: auto; }
 }
 
+/* Required adult, consent, and safety controls. */
+.age-gate[hidden] { display: none; }
+.age-gate {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: auto;
+  background: rgba(4, 10, 24, .94);
+}
+.age-gate-open { overflow: hidden; }
+.age-gate-card, .safety-dialog {
+  width: min(100%, 580px);
+  border: 1px solid #314362;
+  border-radius: 12px;
+  background: #121d31;
+  color: #f7f8ff;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, .38);
+}
+.age-gate-card { padding: clamp(28px, 5vw, 48px); }
+.age-gate-kicker { display: block; color: #ff8668; font-size: .8rem; font-weight: 700; text-transform: uppercase; }
+.age-gate-card h1, .safety-dialog h2 { margin: 12px 0 14px; color: #f7f8ff; font-family: "Playfair Display", serif; }
+.age-gate-card p, .dialog-copy p { color: #bac4d4; line-height: 1.6; }
+.age-gate-check { margin: 24px 0; color: #dce4f2; }
+.age-gate-check a { color: #90b1ff; }
+.age-gate-actions, .dialog-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.age-gate-actions .primary-btn, .dialog-actions .primary-btn { flex: 1 1 250px; }
+.age-gate-actions .secondary-btn, .dialog-actions .secondary-btn { flex: 1 1 180px; }
+.safety-dialog { padding: 0; max-width: 560px; }
+.safety-dialog::backdrop { background: rgba(4, 10, 24, .76); }
+.dialog-copy { padding: 30px 30px 14px; }
+.dialog-copy label { display: block; margin: 18px 0 7px; color: #f7f8ff; font-weight: 700; }
+.dialog-copy select, .dialog-copy textarea { width: 100%; border: 1px solid #405171; border-radius: 8px; padding: 12px; background: #0e182a; color: #f7f8ff; font: inherit; }
+.dialog-copy textarea { min-height: 104px; resize: vertical; }
+.dialog-actions { padding: 14px 30px 30px; }
+.safety-action { border-color: #a65b67 !important; color: #ffd8d8 !important; }
+@media (max-width: 620px) {
+  .age-gate, .age-gate-card { padding: 18px; }
+  .dialog-copy, .dialog-actions { padding-left: 20px; padding-right: 20px; }
+}
+
 /* Full-size chat and video workspace */
 .screen[data-screen="stranger-chat"] {
   width: min(100%, 1140px);

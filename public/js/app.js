@@ -1,6 +1,7 @@
 const screens = [...document.querySelectorAll(".screen")];
 const visitorId = getVisitorId();
 const stateStorageKey = `dating_app_state_${visitorId}`;
+const ageGateStorageKey = "talkifi_age_gate_v1";
 const validScreens = new Set(screens.map((screen) => screen.dataset.screen));
 let selectedFood = "";
 let selectedTownPoint = null;
@@ -56,6 +57,23 @@ if (savedState.detectedCountry) {
 function saveState(patch = {}) {
   Object.assign(savedState, patch);
   localStorage.setItem(stateStorageKey, JSON.stringify(savedState));
+}
+
+function isAgeVerified() {
+  return localStorage.getItem(ageGateStorageKey) === "accepted";
+}
+
+function showAgeGate() {
+  const gate = document.getElementById("ageGate");
+  if (!gate) return;
+  const needsGate = !isAgeVerified();
+  gate.hidden = !needsGate;
+  document.body.classList.toggle("age-gate-open", needsGate);
+}
+
+function closeAgeGate() {
+  document.getElementById("ageGate").hidden = true;
+  document.body.classList.remove("age-gate-open");
 }
 
 function getVisitorId() {
@@ -633,6 +651,8 @@ function setChatEnabled(enabled) {
   document.getElementById("videoChatBtn").disabled = !canUseChat || chatMode !== "video" || !mediaAccessApproved;
   document.getElementById("skipChatBtn").disabled = !chatRoomToken || chatSearchInProgress;
   document.getElementById("leaveChatBtn").disabled = !chatRoomToken;
+  document.getElementById("reportUserBtn").disabled = !chatRoomToken;
+  document.getElementById("blockUserBtn").disabled = !chatRoomToken;
   document.getElementById("findChatBtn").disabled = !chatAccessApproved || chatSearchInProgress;
   updateMediaButtons();
 }
@@ -1396,28 +1416,84 @@ document.getElementById("videoModeBtn").addEventListener("click", async () => {
   saveState({ chatMode });
   updateChatModeUi();
   setError("chatError");
-
-  try {
-    await requestChatPermissions();
-    if (chatRoomToken) {
-      await startVideo();
-    } else {
-      await beginRandomChat();
-    }
-  } catch (error) {
-    setError("chatError", error.message);
-    setChatStatus("Allow camera and mic before video matching");
-  }
+  document.getElementById("mediaConsentDialog").showModal();
 });
 
 document.getElementById("permissionBtn").addEventListener("click", async () => {
   setError("chatError");
+  if (chatMode === "video") {
+    document.getElementById("mediaConsentDialog").showModal();
+    return;
+  }
   try {
     await requestChatPermissions();
     await beginRandomChat();
   } catch (error) {
     setError("chatError", error.message);
     setChatStatus("Permission needed before matching");
+  }
+});
+
+document.getElementById("allowMediaBtn").addEventListener("click", async () => {
+  const dialog = document.getElementById("mediaConsentDialog");
+  dialog.close();
+  try {
+    await requestChatPermissions();
+    if (chatRoomToken) await startVideo();
+    else await beginRandomChat();
+  } catch (error) {
+    setError("chatError", error.message);
+    setChatStatus("Camera and microphone permission is needed for video chat");
+  }
+});
+
+document.getElementById("continueTextBtn").addEventListener("click", async () => {
+  document.getElementById("mediaConsentDialog").close();
+  chatMode = "text";
+  saveState({ chatMode });
+  updateChatModeUi();
+  try {
+    await requestChatPermissions();
+    if (!chatRoomToken) await beginRandomChat();
+  } catch (error) {
+    setError("chatError", error.message);
+  }
+});
+
+document.getElementById("reportUserBtn").addEventListener("click", () => {
+  if (chatRoomToken) document.getElementById("reportDialog").showModal();
+});
+
+document.getElementById("cancelReportBtn").addEventListener("click", () => document.getElementById("reportDialog").close());
+document.getElementById("reportForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const reason = document.getElementById("reportReason").value;
+  const detail = document.getElementById("reportDetail").value.trim();
+  if (!reason || !chatRoomToken) return;
+  try {
+    await DatingApi.reportUser(visitorId, chatRoomToken, reason, detail);
+    document.getElementById("reportDialog").close();
+    document.getElementById("reportForm").reset();
+    setChatStatus("Report submitted. Thank you for helping keep Talkifi safe.");
+  } catch (error) {
+    setError("chatError", error.message);
+  }
+});
+
+document.getElementById("blockUserBtn").addEventListener("click", () => {
+  if (chatRoomToken) document.getElementById("blockDialog").showModal();
+});
+document.getElementById("cancelBlockBtn").addEventListener("click", () => document.getElementById("blockDialog").close());
+document.getElementById("confirmBlockBtn").addEventListener("click", async () => {
+  const roomToBlock = chatRoomToken;
+  document.getElementById("blockDialog").close();
+  if (!roomToBlock) return;
+  try {
+    await DatingApi.blockUser(visitorId, roomToBlock);
+    await leaveCurrentChat();
+    setChatStatus("User blocked. You will not be matched with this user again on this device.");
+  } catch (error) {
+    setError("chatError", error.message);
   }
 });
 
@@ -1524,6 +1600,27 @@ window.addEventListener("popstate", (event) => {
   renderScreen(validScreens.has(name) ? name : "invite");
 });
 
+document.getElementById("enterTalkifiBtn").addEventListener("click", async () => {
+  const confirmed = document.getElementById("ageGateConfirm").checked;
+  if (!confirmed) {
+    setError("ageGateError", "Confirm that you are 18 or older to enter Talkifi.");
+    return;
+  }
+  localStorage.setItem(ageGateStorageKey, "accepted");
+  closeAgeGate();
+  try {
+    await DatingApi.recordConsent(visitorId);
+  } catch (error) {
+    // Local consent still keeps the access gate in place if a temporary server issue occurs.
+  }
+});
+
+document.getElementById("underAgeBtn").addEventListener("click", () => {
+  const card = document.querySelector(".age-gate-card");
+  card.innerHTML = "<span class=\"age-gate-kicker\">Access restricted</span><h1>Sorry, Talkifi is for adults only.</h1><p>You cannot enter Talkifi unless you are 18 years or older.</p>";
+  document.body.classList.add("age-gate-open", "age-gate-denied");
+});
+
 window.RomanceAnimations?.makePetals?.();
 locationControlsReady = initLocationControls();
 restoreSavedFormState();
@@ -1537,6 +1634,7 @@ const initialUrl = new URL(window.location.href);
 initialUrl.searchParams.set("screen", initialScreen);
 window.history.replaceState({ screen: initialScreen }, "", initialUrl);
 renderScreen(initialScreen);
+showAgeGate();
 updateChatModeUi();
 updatePermissionButton();
 if (initialScreen === "invite") {

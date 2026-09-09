@@ -187,3 +187,19 @@ function database_error_message(PDOException $exception): string
         'Database unavailable.'
     };
 }
+
+function active_chat_partner(PDO $pdo, string $visitorId, string $roomToken): string
+{
+    $statement = $pdo->prepare(
+        'SELECT visitor_one, visitor_two FROM chat_rooms
+         WHERE room_token = :room_token
+           AND status = \'active\'
+           AND (visitor_one = :visitor_one OR visitor_two = :visitor_two)'
+    );
+    $statement->execute(['room_token' => $roomToken, 'visitor_one' => $visitorId, 'visitor_two' => $visitorId]);
+    $room = $statement->fetch();
+    if (!$room || !$room['visitor_two']) {
+        json_response(['success' => false, 'message' => 'An active chat is required for this action'], 422);
+    }
+    return $room['visitor_one'] === $visitorId ? (string)$room['visitor_two'] : (string)$room['visitor_one'];
+}
