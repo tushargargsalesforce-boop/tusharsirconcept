@@ -444,10 +444,14 @@ function distanceInKm(latitude, longitude, latitudeOffset, longitudeOffset) {
 function nearbyPlaces(query = "") {
   const base = selectedTownPoint || { lat: 0, lng: 0 };
   const search = query.trim().toLowerCase();
-  return nearbyPlaceCatalog
+  const places = nearbyPlaceCatalog
     .map((place) => ({ ...place, distanceKm: distanceInKm(base.lat, base.lng, place.lat, place.lng) }))
-    .filter((place) => !search || `${place.name} ${place.description} ${place.tags}`.toLowerCase().includes(search))
     .sort((first, second) => first.distanceKm - second.distanceKm);
+
+  if (!search) return places;
+
+  const filtered = places.filter((place) => `${place.name} ${place.description} ${place.tags}`.toLowerCase().includes(search));
+  return filtered.length ? filtered : places;
 }
 
 function cafeCardMarkup(place) {
@@ -469,14 +473,18 @@ function renderNearbySearch() {
   if (!summary || !results) return;
 
   const town = selectedGeoName("townSelect") || savedState.town || "your town";
-  summary.textContent = `${places.length} place${places.length === 1 ? "" : "s"} found within 10 km of ${town}.`;
-  results.innerHTML = places.slice(0, 5).map((place) => `<article class="nearby-result">${cafeCardMarkup(place)}</article>`).join("");
+  const searchQuery = query.trim();
+  const exactMatches = searchQuery
+    ? nearbyPlaceCatalog.filter((place) => `${place.name} ${place.description} ${place.tags}`.toLowerCase().includes(searchQuery.toLowerCase())).length
+    : places.length;
+  summary.textContent = exactMatches
+    ? `${exactMatches} place${exactMatches === 1 ? "" : "s"} found within 10 km of ${town}.`
+    : `No exact match for "${searchQuery}". Showing nearby places within 10 km of ${town}.`;
+  results.innerHTML = places.map((place) => `<article class="nearby-result">${cafeCardMarkup(place)}</article>`).join("");
 }
 
 function renderNearbyCafes() {
-  const list = document.getElementById("matchList");
-  const places = nearbyPlaces();
-  list.innerHTML = places.map((place) => `<div class="match-item cafe-item">${cafeCardMarkup(place)}</div>`).join("");
+  renderNearbySearch();
 }
 
 function renderMatches(matches) {
@@ -1208,13 +1216,13 @@ document.getElementById("saveLocationBtn").addEventListener("click", async () =>
     });
     renderNearbyCafes();
     await sendHeartbeat();
-    showScreen("matches");
+    document.getElementById("nearbySearchResults")?.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
     setError("locationError", error.message);
   }
 });
 
-document.getElementById("matchList").addEventListener("click", (event) => {
+document.getElementById("nearbySearchResults").addEventListener("click", (event) => {
   const button = event.target.closest(".cafe-date-btn");
   if (!button) return;
 
