@@ -32,7 +32,7 @@ if ($term === '') {
 $lat = number_format((float)$latitude, 6, '.', '');
 $lng = number_format((float)$longitude, 6, '.', '');
 $params = [
-    'categories' => 'catering.cafe,catering.restaurant,catering.fast_food,catering.bakery,commercial.supermarket',
+    'categories' => 'catering.cafe,catering.restaurant,catering.fast_food,commercial.supermarket',
     'filter' => 'circle:' . $lng . ',' . $lat . ',10000',
     'limit' => 20,
     'apiKey' => $apiKey,
