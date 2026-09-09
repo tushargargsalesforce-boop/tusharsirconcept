@@ -30,6 +30,7 @@ let faceMonitorTimer = null;
 let faceMissingSince = 0;
 let faceWarningInProgress = false;
 let faceDetector = null;
+let nearbySearchRequestId = 0;
 
 function readSavedState() {
   try {
@@ -224,8 +225,7 @@ function applyDetectedLocation(location) {
     district: location.district,
     town: location.town,
   });
-  document.getElementById("locationPermissionNote").textContent =
-    `Detected: ${location.country}, ${location.state}. Exact coordinates stay private.`;
+  document.getElementById("locationPermissionNote")?.replaceChildren();
   updateMapPreview();
   renderNearbySearch();
 }
@@ -465,22 +465,47 @@ function cafeCardMarkup(place) {
   `;
 }
 
-function renderNearbySearch() {
-  const query = document.getElementById("nearbyPlaceSearch")?.value || "";
-  const places = nearbyPlaces(query);
+function renderNearbyPlaces(places, query, fallback = false) {
   const summary = document.getElementById("nearbySearchSummary");
   const results = document.getElementById("nearbySearchResults");
   if (!summary || !results) return;
 
   const town = selectedGeoName("townSelect") || savedState.town || "your town";
-  const searchQuery = query.trim();
-  const exactMatches = searchQuery
-    ? nearbyPlaceCatalog.filter((place) => `${place.name} ${place.description} ${place.tags}`.toLowerCase().includes(searchQuery.toLowerCase())).length
-    : places.length;
-  summary.textContent = exactMatches
-    ? `${exactMatches} place${exactMatches === 1 ? "" : "s"} found within 10 km of ${town}.`
-    : `No exact match for "${searchQuery}". Showing nearby places within 10 km of ${town}.`;
-  results.innerHTML = places.map((place) => `<article class="nearby-result">${cafeCardMarkup(place)}</article>`).join("");
+  summary.textContent = fallback
+    ? `Showing nearby suggestions within 10 km of ${town}.`
+    : `${places.length} place${places.length === 1 ? "" : "s"} found within 10 km of ${town}.`;
+  results.innerHTML = places.slice(0, 5).map((place) => `<article class="nearby-result">${cafeCardMarkup(place)}</article>`).join("");
+}
+
+async function renderNearbySearch() {
+  const query = document.getElementById("nearbyPlaceSearch")?.value || "";
+  const requestId = ++nearbySearchRequestId;
+  const fallbackPlaces = nearbyPlaces(query);
+  if (!selectedTownPoint || !query.trim()) {
+    renderNearbyPlaces(fallbackPlaces, query, false);
+    return;
+  }
+
+  const results = document.getElementById("nearbySearchResults");
+  const summary = document.getElementById("nearbySearchSummary");
+  if (summary) summary.textContent = "Searching nearby map places...";
+
+  try {
+    const response = await DatingApi.nearbyPlaces({
+      query: query.trim(),
+      latitude: selectedTownPoint.lat,
+      longitude: selectedTownPoint.lng,
+    });
+    if (requestId !== nearbySearchRequestId) return;
+    const places = (response.items || []).map((place) => ({
+      ...place,
+      distanceKm: Number(place.distanceKm || 0),
+    }));
+    renderNearbyPlaces(places.length ? places : fallbackPlaces, query, !places.length);
+  } catch (error) {
+    if (requestId !== nearbySearchRequestId) return;
+    renderNearbyPlaces(fallbackPlaces, query, true);
+  }
 }
 
 function renderNearbyCafes() {
@@ -1296,7 +1321,7 @@ function requestCurrentLocation(statusId = "locationError", buttonId = "useCurre
   }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
 }
 
-document.getElementById("useCurrentLocationBtn").addEventListener("click", requestCurrentLocation);
+document.getElementById("useCurrentLocationBtn")?.addEventListener("click", requestCurrentLocation);
 document.getElementById("acceptBtn").addEventListener("click", async () => {
   setError("acceptError");
 
