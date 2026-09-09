@@ -5,6 +5,7 @@ const validScreens = new Set(screens.map((screen) => screen.dataset.screen));
 let selectedFood = "";
 let selectedTownPoint = null;
 let detectedLocation = null;
+let locationPromptAttempted = false;
 let chatRoomToken = "";
 let chatIsCreator = false;
 let chatStatusTimer = null;
@@ -89,6 +90,9 @@ function showScreen(name, { replace = false } = {}) {
     window.history.replaceState(state, "", url);
   } else {
     window.history.pushState(state, "", url);
+  }
+  if (name === "location" && !locationPromptAttempted && !savedState.country) {
+    requestCurrentLocation();
   }
 }
 
@@ -1118,9 +1122,15 @@ document.getElementById("saveLocationBtn").addEventListener("click", async () =>
   }
 });
 
-document.getElementById("useCurrentLocationBtn").addEventListener("click", () => {
+function requestCurrentLocation() {
   const button = document.getElementById("useCurrentLocationBtn");
   setError("locationError");
+  locationPromptAttempted = true;
+
+  if (!window.isSecureContext && !isLocalhostPage()) {
+    setError("locationError", "Location permission needs HTTPS. Open the secure https:// version of this site.");
+    return;
+  }
 
   if (!navigator.geolocation) {
     setError("locationError", "Your browser does not support location access.");
@@ -1152,7 +1162,9 @@ document.getElementById("useCurrentLocationBtn").addEventListener("click", () =>
     button.disabled = false;
     button.textContent = "use my current location";
   }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
-});
+}
+
+document.getElementById("useCurrentLocationBtn").addEventListener("click", requestCurrentLocation);
 
 document.getElementById("acceptBtn").addEventListener("click", async () => {
   setError("acceptError");
