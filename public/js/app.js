@@ -446,12 +446,13 @@ function escapeHtml(value) {
 }
 
 function currentLocationPayload() {
+  const onlineLocation = detectedLocation || {};
   return {
     visitor_id: visitorId,
-    country: savedState.country || "",
-    state: savedState.state || "",
-    district: savedState.district || "",
-    town: savedState.town || "",
+    country: onlineLocation.country || "",
+    state: onlineLocation.state || "",
+    district: onlineLocation.district || "",
+    town: onlineLocation.town || "",
   };
 }
 
@@ -1191,6 +1192,7 @@ function requestCurrentLocation(statusId = "locationError", buttonId = "useCurre
       if (!locations[0]) throw new Error("Could not identify this area. Choose it manually.");
       applyDetectedLocation(locations[0]);
       if (status) status.textContent = `Detected: ${locations[0].country}, ${locations[0].state}`;
+      await sendHeartbeat();
     } catch (error) {
       if (status) status.textContent = error.message;
     } finally {

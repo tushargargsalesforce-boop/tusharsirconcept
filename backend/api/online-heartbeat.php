@@ -14,10 +14,10 @@ endpoint_guard(function (PDO $pdo, array $data): void {
         'INSERT INTO online_users (visitor_id, country, state, district, town, last_seen)
          VALUES (:visitor_id, :country, :state, :district, :town, CURRENT_TIMESTAMP)
          ON DUPLICATE KEY UPDATE
-           country = COALESCE(VALUES(country), country),
-           state = COALESCE(VALUES(state), state),
-           district = COALESCE(VALUES(district), district),
-           town = COALESCE(VALUES(town), town),
+           country = VALUES(country),
+           state = VALUES(state),
+           district = VALUES(district),
+           town = VALUES(town),
            last_seen = CURRENT_TIMESTAMP'
     );
     $stmt->execute([
