@@ -7,7 +7,7 @@ load_env_file(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env');
 require_post();
 $data = read_json_body();
 $query = trim((string)($data['query'] ?? ''));
-$apiKey = trim((string)(getenv('GEOAPIFY_API_KEY') ?: ''));
+$apiKey = trim((string)(getenv('GEOAPIFY_API_KEY') ?: ($_ENV['GEOAPIFY_API_KEY'] ?? '')));
 $latitude = filter_var($data['latitude'] ?? null, FILTER_VALIDATE_FLOAT);
 $longitude = filter_var($data['longitude'] ?? null, FILTER_VALIDATE_FLOAT);
 
