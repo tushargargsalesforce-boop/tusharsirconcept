@@ -119,11 +119,23 @@ function geoapify_request(array $params): string
             CURLOPT_USERAGENT => 'talkifi-nearby-place-search/1.0',
         ]);
         $body = curl_exec($curl);
+        if ($body === false) {
+            error_log('Geoapify cURL failed: ' . curl_error($curl));
+        }
         curl_close($curl);
-        return $body === false ? '' : (string)$body;
+        if ($body !== false && $body !== '') {
+            return (string)$body;
+        }
     }
 
-    $context = stream_context_create(['http' => ['method' => 'GET', 'timeout' => 15]]);
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'GET',
+            'timeout' => 20,
+            'ignore_errors' => true,
+            'header' => "User-Agent: talkifi-nearby-place-search/1.0\r\n",
+        ],
+    ]);
     $body = file_get_contents($url, false, $context);
     return $body === false ? '' : (string)$body;
 }
