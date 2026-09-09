@@ -69,6 +69,7 @@ function generateIdPart(length) {
 
 function renderScreen(name) {
   if (!validScreens.has(name)) return;
+  document.body.classList.toggle("dark-landing", name === "invite");
   screens.forEach((screen) => {
     screen.classList.toggle("active", screen.dataset.screen === name);
   });
@@ -934,7 +935,7 @@ document.getElementById("yesBtn").addEventListener("click", async () => {
   } catch (error) {
     setError("inviteError", error.message);
   }
-  showScreen("yes");
+  showScreen("stranger-chat");
 });
 
 document.querySelectorAll("[data-next]").forEach((button) => {
@@ -981,6 +982,18 @@ document.getElementById("foodGrid").addEventListener("click", (event) => {
     otherInput.value = "";
     saveState({ otherFood: "" });
   }
+});
+
+document.getElementById("landingStartBtn")?.addEventListener("click", () => {
+  document.getElementById("yesBtn").click();
+});
+
+document.getElementById("previewStartBtn")?.addEventListener("click", () => {
+  document.getElementById("yesBtn").click();
+});
+
+document.getElementById("landingSkipBtn")?.addEventListener("click", () => {
+  document.getElementById("yesBtn").click();
 });
 
 document.getElementById("dateInput").addEventListener("change", (event) => {
