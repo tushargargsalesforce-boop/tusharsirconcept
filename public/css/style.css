@@ -440,6 +440,9 @@ select {
 .landing-primary, .landing-secondary, .date-teaser button, .skip-preview { min-height: 54px; padding: 0 25px; border-radius: 15px; cursor: pointer; font-weight: 700; }
 .landing-primary { border: 0; background: linear-gradient(110deg, #6d9df8, #b680ff); color: #0c1225; }
 .landing-secondary, .skip-preview { border: 1px solid #39445e; background: #151e31; color: #f5f6fd; }
+.landing-location-btn { min-height: 42px; margin-top: 14px; padding: 0 18px; border: 1px solid #4169ae; border-radius: 12px; background: #18243a; color: #9dbbff; cursor: pointer; font-weight: 700; }
+.landing-location-btn:disabled { cursor: wait; opacity: .65; }
+.landing-location-status { min-height: 20px; margin: 8px 0 0; color: #8f99ad; font-size: .82rem; }
 .play-icon { display: inline-grid; place-items: center; width: 25px; height: 25px; margin-right: 8px; border-radius: 50%; background: #f5f6fd; color: #6898f6; font-size: .7rem; }
 .landing-note { color: #727d91; font-size: .8rem; letter-spacing: .03em; }
 .landing-preview-column { display: grid; gap: 20px; }

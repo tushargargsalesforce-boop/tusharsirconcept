@@ -1122,23 +1122,27 @@ document.getElementById("saveLocationBtn").addEventListener("click", async () =>
   }
 });
 
-function requestCurrentLocation() {
-  const button = document.getElementById("useCurrentLocationBtn");
-  setError("locationError");
+function requestCurrentLocation(statusId = "locationError", buttonId = "useCurrentLocationBtn") {
+  const button = document.getElementById(buttonId);
+  const buttonLabel = button?.textContent || "use my current location";
+  const status = document.getElementById(statusId);
+  if (status) status.textContent = "";
   locationPromptAttempted = true;
 
   if (!window.isSecureContext && !isLocalhostPage()) {
-    setError("locationError", "Location permission needs HTTPS. Open the secure https:// version of this site.");
+    if (status) status.textContent = "Location permission needs HTTPS. Open the secure https:// version of this site.";
     return;
   }
 
   if (!navigator.geolocation) {
-    setError("locationError", "Your browser does not support location access.");
+    if (status) status.textContent = "Your browser does not support location access.";
     return;
   }
 
-  button.disabled = true;
-  button.textContent = "finding your approximate area...";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "finding your approximate area...";
+  }
   navigator.geolocation.getCurrentPosition(async ({ coords }) => {
     try {
       const locations = await loadGeoNames({
@@ -1148,23 +1152,31 @@ function requestCurrentLocation() {
       });
       if (!locations[0]) throw new Error("Could not identify this area. Choose it manually.");
       applyDetectedLocation(locations[0]);
+      if (status) status.textContent = `Detected: ${locations[0].country}, ${locations[0].state}`;
     } catch (error) {
-      setError("locationError", error.message);
+      if (status) status.textContent = error.message;
     } finally {
-      button.disabled = false;
-      button.textContent = "use my current location";
+      if (button) {
+        button.disabled = false;
+        button.textContent = buttonLabel;
+      }
     }
   }, (error) => {
     const message = error.code === error.PERMISSION_DENIED
       ? "Location permission was denied. You can choose your area manually."
       : "Could not access your location. You can choose your area manually.";
-    setError("locationError", message);
-    button.disabled = false;
-    button.textContent = "use my current location";
+    if (status) status.textContent = message;
+    if (button) {
+      button.disabled = false;
+      button.textContent = buttonLabel;
+    }
   }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
 }
 
 document.getElementById("useCurrentLocationBtn").addEventListener("click", requestCurrentLocation);
+document.getElementById("landingLocationBtn")?.addEventListener("click", () => {
+  requestCurrentLocation("landingLocationStatus", "landingLocationBtn");
+});
 
 document.getElementById("acceptBtn").addEventListener("click", async () => {
   setError("acceptError");
