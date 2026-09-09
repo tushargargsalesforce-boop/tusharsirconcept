@@ -113,6 +113,38 @@ if ($action === 'cities') {
     json_response(['success' => true, 'items' => sort_geonames($items)]);
 }
 
+if ($action === 'reverse') {
+    $latitude = filter_var($data['latitude'] ?? null, FILTER_VALIDATE_FLOAT);
+    $longitude = filter_var($data['longitude'] ?? null, FILTER_VALIDATE_FLOAT);
+
+    if ($latitude === false || $longitude === false || $latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
+        json_response(['success' => false, 'message' => 'Valid coordinates are required'], 422);
+    }
+
+    $response = geonames_request('findNearbyPlaceNameJSON', [
+        'lat' => $latitude,
+        'lng' => $longitude,
+        'maxRows' => 1,
+        'lang' => 'en',
+        'username' => $username,
+    ]);
+    $row = $response['geonames'][0] ?? null;
+
+    if (!$row) {
+        json_response(['success' => true, 'items' => []]);
+    }
+
+    json_response(['success' => true, 'items' => [[
+        'country' => (string)($row['countryName'] ?? 'Approximate area'),
+        'countryCode' => (string)($row['countryCode'] ?? ''),
+        'state' => (string)($row['adminName1'] ?? 'Private state'),
+        'district' => (string)($row['adminName2'] ?? 'Nearby district'),
+        'town' => (string)($row['name'] ?? $row['toponymName'] ?? 'Nearby town'),
+        'lat' => (float)($row['lat'] ?? $latitude),
+        'lng' => (float)($row['lng'] ?? $longitude),
+    ]]]);
+}
+
 json_response(['success' => false, 'message' => 'Invalid GeoNames action'], 422);
 
 function geonames_request(string $service, array $params): array

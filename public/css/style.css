@@ -149,6 +149,18 @@ body.dark-app .match-item {
   background: #121b2d;
 }
 
+.location-button {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.location-permission-note {
+  margin: 0 0 16px;
+  color: #a9b1c2;
+  font-size: .82rem;
+  text-align: center;
+}
+
 body.dark-app .secondary-btn,
 body.dark-app .mode-tab {
   border-color: #46526b;

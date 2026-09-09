@@ -4,6 +4,7 @@ const stateStorageKey = `dating_app_state_${visitorId}`;
 const validScreens = new Set(screens.map((screen) => screen.dataset.screen));
 let selectedFood = "";
 let selectedTownPoint = null;
+let detectedLocation = null;
 let chatRoomToken = "";
 let chatIsCreator = false;
 let chatStatusTimer = null;
@@ -180,6 +181,40 @@ function selectedGeoName(selectId) {
 async function loadGeoNames(payload) {
   const response = await DatingApi.geonames(payload);
   return response.items || [];
+}
+
+function locationOption(name, id, latitude, longitude, countryCode = "") {
+  return {
+    name,
+    geonameId: id,
+    lat: latitude,
+    lng: longitude,
+    countryCode,
+  };
+}
+
+function applyDetectedLocation(location) {
+  const latitude = Number(location.lat);
+  const longitude = Number(location.lng);
+  const country = locationOption(location.country, 9100001, latitude, longitude, location.countryCode);
+  const state = locationOption(location.state, 9100002, latitude, longitude, location.countryCode);
+  const district = locationOption(location.district, 9100003, latitude, longitude, location.countryCode);
+  const town = locationOption(location.town, 9100004, latitude, longitude, location.countryCode);
+
+  populateSelect(document.getElementById("countrySelect"), [country], "choose country...");
+  populateSelect(document.getElementById("stateSelect"), [state], "choose state...");
+  populateSelect(document.getElementById("districtSelect"), [district], "choose district...");
+  populateSelect(document.getElementById("townSelect"), [town], "choose town...");
+  document.getElementById("stateSelect").disabled = false;
+  document.getElementById("districtSelect").disabled = false;
+  document.getElementById("townSelect").disabled = false;
+  document.getElementById("countrySelect").value = String(country.geonameId);
+  document.getElementById("stateSelect").value = String(state.geonameId);
+  document.getElementById("districtSelect").value = String(district.geonameId);
+  document.getElementById("townSelect").value = String(town.geonameId);
+  selectedTownPoint = { lat: latitude, lng: longitude };
+  detectedLocation = location;
+  updateMapPreview();
 }
 
 async function initLocationControls() {
@@ -1073,6 +1108,42 @@ document.getElementById("saveLocationBtn").addEventListener("click", async () =>
   } catch (error) {
     setError("locationError", error.message);
   }
+});
+
+document.getElementById("useCurrentLocationBtn").addEventListener("click", () => {
+  const button = document.getElementById("useCurrentLocationBtn");
+  setError("locationError");
+
+  if (!navigator.geolocation) {
+    setError("locationError", "Your browser does not support location access.");
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "finding your approximate area...";
+  navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+    try {
+      const locations = await loadGeoNames({
+        action: "reverse",
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      });
+      if (!locations[0]) throw new Error("Could not identify this area. Choose it manually.");
+      applyDetectedLocation(locations[0]);
+    } catch (error) {
+      setError("locationError", error.message);
+    } finally {
+      button.disabled = false;
+      button.textContent = "use my current location";
+    }
+  }, (error) => {
+    const message = error.code === error.PERMISSION_DENIED
+      ? "Location permission was denied. You can choose your area manually."
+      : "Could not access your location. You can choose your area manually.";
+    setError("locationError", message);
+    button.disabled = false;
+    button.textContent = "use my current location";
+  }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
 });
 
 document.getElementById("acceptBtn").addEventListener("click", async () => {
