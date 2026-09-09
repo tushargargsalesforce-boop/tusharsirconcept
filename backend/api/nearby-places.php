@@ -31,9 +31,11 @@ if ($term === '') {
 
 $lat = number_format((float)$latitude, 6, '.', '');
 $lng = number_format((float)$longitude, 6, '.', '');
+$categories = categories_for_search($term);
 $params = [
-    'categories' => 'catering.cafe,catering.restaurant,catering.fast_food,commercial.supermarket',
+    'categories' => implode(',', $categories),
     'filter' => 'circle:' . $lng . ',' . $lat . ',10000',
+    'bias' => 'proximity:' . $lng . ',' . $lat,
     'limit' => 20,
     'apiKey' => $apiKey,
 ];
@@ -60,17 +62,22 @@ foreach (($decoded['features'] ?? []) as $feature) {
     if (isset($seen[$key])) continue;
     $seen[$key] = true;
 
-    $categories = is_array($properties['categories'] ?? null)
+    $placeCategories = is_array($properties['categories'] ?? null)
         ? implode(' ', $properties['categories'])
         : (string)($properties['categories'] ?? '');
-    $searchHaystack = strtolower($name . ' ' . $categories . ' ' . ($properties['city'] ?? '') . ' ' . ($properties['suburb'] ?? ''));
-    $searchTerms = [strtolower($term)];
-    if (stripos($term, 'coffee') !== false || stripos($term, 'cafe') !== false) {
-        $searchTerms = array_merge($searchTerms, ['cafe', 'coffee']);
-    }
-    if (stripos($term, 'bakery') !== false) $searchTerms[] = 'bakery';
-    if (stripos($term, 'pizza') !== false) $searchTerms[] = 'pizza';
-    if (stripos($term, 'burger') !== false) $searchTerms[] = 'burger';
+    $searchHaystack = strtolower(implode(' ', array_filter([
+        $name,
+        $placeCategories,
+        $properties['address_line1'] ?? '',
+        $properties['address_line2'] ?? '',
+        $properties['street'] ?? '',
+        $properties['city'] ?? '',
+        $properties['district'] ?? '',
+        $properties['state'] ?? '',
+        $properties['country'] ?? '',
+        $properties['suburb'] ?? '',
+    ])));
+    $searchTerms = search_terms_for($term);
     $matchesSearch = false;
     foreach ($searchTerms as $searchTerm) {
         if (stripos($searchHaystack, $searchTerm) !== false) {
@@ -79,7 +86,7 @@ foreach (($decoded['features'] ?? []) as $feature) {
         }
     }
     if (!$matchesSearch) continue;
-    $category = str_contains($categories, 'bakery') ? 'Bakery' : (str_contains($categories, 'cafe') ? 'Cafe' : 'Food place');
+    $category = place_category_label($placeCategories);
     $distance = distance_km((float)$latitude, (float)$longitude, $placeLatitude, $placeLongitude);
     if ($distance > 10) continue;
 
@@ -87,7 +94,7 @@ foreach (($decoded['features'] ?? []) as $feature) {
         'name' => $name,
         'placeId' => (string)($properties['place_id'] ?? $properties['datasource']['raw']['id'] ?? ''),
         'description' => $category,
-        'detail' => trim((string)($properties['address_line2'] ?? $properties['city'] ?? 'Found on Geoapify map')),
+        'detail' => trim((string)($properties['formatted'] ?? $properties['address_line2'] ?? $properties['city'] ?? 'Found on Geoapify map')),
         'distanceKm' => round($distance, 1),
         'lat' => $placeLatitude,
         'lng' => $placeLongitude,
@@ -105,6 +112,74 @@ function distance_km(float $latOne, float $lngOne, float $latTwo, float $lngTwo)
     $a = sin($latDelta / 2) ** 2
         + cos(deg2rad($latOne)) * cos(deg2rad($latTwo)) * sin($lngDelta / 2) ** 2;
     return $earthRadius * 2 * atan2(sqrt($a), sqrt(1 - $a));
+}
+
+function categories_for_search(string $term): array
+{
+    $term = strtolower($term);
+    $categories = [];
+
+    $categoryMap = [
+        'cafe' => ['catering.cafe'],
+        'coffee' => ['catering.cafe'],
+        'tea' => ['catering.cafe'],
+        'bakery' => ['commercial.food_and_drink'],
+        'brunch' => ['catering.restaurant'],
+        'restaurant' => ['catering.restaurant'],
+        'food' => ['catering.restaurant', 'catering.fast_food'],
+        'pizza' => ['catering.restaurant', 'catering.fast_food'],
+        'burger' => ['catering.fast_food'],
+        'fast food' => ['catering.fast_food'],
+        'shop' => ['commercial.supermarket', 'commercial.marketplace'],
+        'supermarket' => ['commercial.supermarket'],
+        'market' => ['commercial.supermarket', 'commercial.marketplace'],
+    ];
+
+    foreach ($categoryMap as $keyword => $mappedCategories) {
+        if (str_contains($term, $keyword)) {
+            $categories = array_merge($categories, $mappedCategories);
+        }
+    }
+
+    return array_values(array_unique($categories ?: [
+        'catering.cafe',
+        'catering.restaurant',
+        'catering.fast_food',
+        'commercial.food_and_drink',
+        'commercial.supermarket',
+        'commercial.marketplace',
+    ]));
+}
+
+function search_terms_for(string $term): array
+{
+    $terms = preg_split('/\s+/', strtolower($term), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    $terms = array_values(array_filter($terms, static fn(string $value): bool => strlen($value) >= 3));
+
+    $synonyms = [
+        'cafe' => ['cafe', 'coffee'],
+        'coffee' => ['cafe', 'coffee'],
+        'restaurant' => ['restaurant', 'food'],
+        'bakery' => ['bakery', 'bread'],
+        'pizza' => ['pizza'],
+        'burger' => ['burger'],
+    ];
+
+    foreach ($terms as $termPart) {
+        if (isset($synonyms[$termPart])) {
+            $terms = array_merge($terms, $synonyms[$termPart]);
+        }
+    }
+
+    return array_values(array_unique($terms ?: [$term]));
+}
+
+function place_category_label(string $categories): string
+{
+    $categories = strtolower($categories);
+    return str_contains($categories, 'bakery') || str_contains($categories, 'food_and_drink')
+        ? 'Bakery or food shop'
+        : (str_contains($categories, 'cafe') ? 'Cafe' : (str_contains($categories, 'restaurant') ? 'Restaurant' : 'Nearby place'));
 }
 
 function geoapify_request(array $params): string
