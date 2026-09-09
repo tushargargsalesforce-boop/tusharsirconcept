@@ -59,6 +59,74 @@ body:has(.landing-screen.active) .brand-name {
   font-size: 1.2rem;
 }
 
+body.dark-app {
+  background: #091326;
+  color: #f7f8ff;
+}
+
+body.dark-app .chat-topbar {
+  border-bottom-color: rgba(67, 87, 124, .35);
+  background: rgba(9, 19, 38, .94);
+}
+
+body.dark-app .chat-brand strong,
+body.dark-app .online-counter {
+  color: #a9b1c2;
+}
+
+body.dark-app .panel {
+  border-color: #354056;
+  background: rgba(26, 34, 52, .96);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+}
+
+body.dark-app h1,
+body.dark-app h2,
+body.dark-app label,
+body.dark-app .chat-status,
+body.dark-app .video-label {
+  color: #f7f8ff;
+}
+
+body.dark-app p,
+body.dark-app .tiny-note,
+body.dark-app .check-row,
+body.dark-app .error-message {
+  color: #a9b1c2;
+}
+
+body.dark-app input,
+body.dark-app select {
+  border-color: #46526b;
+  background: #121b2d;
+  color: #f7f8ff;
+}
+
+body.dark-app .chat-gate,
+body.dark-app .messages,
+body.dark-app .chat-status {
+  border-color: #354056;
+  background: #121b2d;
+}
+
+body.dark-app .video-tile {
+  border-color: #46526b;
+  background: #0b1220;
+}
+
+body.dark-app .secondary-btn,
+body.dark-app .mode-tab {
+  border-color: #46526b;
+  background: #1a263b;
+  color: #f7f8ff;
+}
+
+body.dark-app .mode-tab.active,
+body.dark-app .primary-btn {
+  background: linear-gradient(110deg, #6d9df8, #b680ff);
+  color: #0c1225;
+}
+
 .landing-nav {
   display: flex;
   align-items: center;

@@ -70,6 +70,7 @@ function generateIdPart(length) {
 function renderScreen(name) {
   if (!validScreens.has(name)) return;
   document.body.classList.toggle("dark-landing", name === "invite");
+  document.body.classList.toggle("dark-app", name !== "invite");
   screens.forEach((screen) => {
     screen.classList.toggle("active", screen.dataset.screen === name);
   });
