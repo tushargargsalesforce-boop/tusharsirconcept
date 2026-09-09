@@ -140,7 +140,8 @@ body:has(.landing-screen.active) .brand-name {
 .online-panel {
   position: fixed;
   top: 78px;
-  right: 18px;
+  right: max(18px, 2vw);
+  left: auto;
   z-index: 20;
   display: none;
   width: min(360px, calc(100vw - 32px));
@@ -228,7 +229,7 @@ select {
 }
 
 .landing-screen {
-  width: min(100%, 1180px);
+  width: min(100%, 1308px);
 }
 
 .landing-screen .invitation-panel {
