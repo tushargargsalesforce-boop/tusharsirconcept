@@ -943,6 +943,12 @@ document.querySelectorAll("[data-next]").forEach((button) => {
   button.addEventListener("click", () => showScreen(button.dataset.next));
 });
 
+document.getElementById("homeLink")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  resetChatUi();
+  showScreen("invite", { replace: true });
+});
+
 document.getElementById("saveDateBtn").addEventListener("click", async () => {
   const selectedDate = document.getElementById("dateInput").value;
   const selectedTime = document.getElementById("timeInput").value;

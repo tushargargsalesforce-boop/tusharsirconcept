@@ -16,11 +16,11 @@
   <div class="petal-field" aria-hidden="true"></div>
 
   <header class="chat-topbar">
-    <div class="chat-brand">
+    <a class="chat-brand" id="homeLink" href="./" aria-label="Go to Talkifi home">
       <span class="brand-mark">♡</span>
       <span class="brand-name">Talkifi</span>
       <strong>Talk with strangers</strong>
-    </div>
+    </a>
     <nav class="landing-nav" aria-label="Main navigation">
       <a href="#how-it-works">How it works</a>
       <a href="#safety">Safety</a>
@@ -31,10 +31,11 @@
 
   <aside class="online-panel" id="onlinePanel" aria-hidden="true">
     <div class="online-panel-head">
-      <strong>Online People</strong>
+      <strong>Approximate online locations</strong>
       <button id="closeOnlinePanel" type="button" aria-label="Close online stats">×</button>
     </div>
     <div class="online-total" id="onlineTotal">0 online now</div>
+    <p class="online-location-note">Country and state totals only. Exact locations are never shown.</p>
     <h3>Country wise</h3>
     <div class="stats-list" id="countryStats"></div>
     <h3>State wise</h3>
@@ -246,6 +247,6 @@
 
   <script src="public/js/api.js?v=20260908-flow"></script>
   <script src="public/js/animations.js?v=20260908-flow"></script>
-  <script src="public/js/app.js?v=20260909-dark-app-theme"></script>
+  <script src="public/js/app.js?v=20260909-home-navigation"></script>
 </body>
 </html>

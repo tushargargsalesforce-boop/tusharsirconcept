@@ -181,6 +181,8 @@ body.dark-app .primary-btn {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  color: inherit;
+  text-decoration: none;
 }
 
 .brand-mark {
@@ -255,6 +257,13 @@ body.dark-app .primary-btn {
   background: #fff0f4;
   color: var(--rose-dark);
   cursor: pointer;
+}
+
+.online-location-note {
+  margin: 10px 0 16px;
+  color: #a9b1c2;
+  font-size: .82rem;
+  line-height: 1.45;
 }
 
 .online-total {
