@@ -329,6 +329,48 @@ body.dark-app .primary-btn {
   background: var(--cream);
 }
 
+body.dark-landing .online-panel,
+body.dark-app .online-panel {
+  border-color: #354056;
+  background: #121b2d;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .38);
+}
+
+body.dark-landing .online-panel-head,
+body.dark-app .online-panel-head {
+  color: #f7f8ff;
+}
+
+body.dark-landing .online-panel-head button,
+body.dark-app .online-panel-head button {
+  border-color: #46526b;
+  background: #1a263b;
+  color: #f7f8ff;
+}
+
+body.dark-landing .online-total,
+body.dark-app .online-total {
+  background: #1a263b;
+  color: #f7f8ff;
+}
+
+body.dark-landing .online-panel h3,
+body.dark-app .online-panel h3 {
+  color: #8cacff;
+}
+
+body.dark-landing .stat-row,
+body.dark-app .stat-row {
+  border-color: #354056;
+  background: #18243a;
+  color: #f7f8ff;
+}
+
+body.dark-landing .stat-row strong,
+body.dark-app .stat-row strong {
+  color: #9b82ff;
+}
+
 button,
 input,
 select {
