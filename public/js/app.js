@@ -1181,7 +1181,12 @@ window.addEventListener("popstate", (event) => {
 window.RomanceAnimations?.makePetals?.();
 restoreSavedFormState();
 const initialScreen = validScreens.has(savedState.screen) ? savedState.screen : "invite";
-window.history.replaceState({ screen: initialScreen }, "", window.location.href);
+if (initialScreen === "invite") {
+  window.history.replaceState({ screen: "invite" }, "", window.location.href);
+} else {
+  window.history.replaceState({ screen: "invite" }, "", window.location.href);
+  window.history.pushState({ screen: initialScreen }, "", window.location.href);
+}
 renderScreen(initialScreen);
 updateChatModeUi();
 updatePermissionButton();
