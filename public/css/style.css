@@ -192,6 +192,30 @@ body.dark-app .primary-btn {
   color: #fff;
 }
 
+.landing-account-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.landing-account-actions a {
+  color: #a9b1c2;
+  text-decoration: none;
+  font-size: .95rem;
+}
+
+.landing-account-actions button {
+  min-height: 42px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #f2f3f7;
+  color: #111827;
+  cursor: pointer;
+  font-weight: 700;
+}
+
 .chat-topbar {
   position: fixed;
   top: 0;
@@ -472,6 +496,7 @@ select {
 
 @media (max-width: 820px) {
   .landing-nav { display: none; }
+  .landing-account-actions { display: none; }
   .landing-layout { grid-template-columns: 1fr; padding-top: 35px; }.landing-copy { max-width: none; }.landing-copy h1 { font-size: clamp(3.3rem, 15vw, 5.5rem); }.preview-video { min-height: 230px; }.landing-features, .landing-terms > div { grid-template-columns: 1fr; }.date-teaser button { margin-left: auto; }
 }
 
