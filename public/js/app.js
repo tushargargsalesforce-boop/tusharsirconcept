@@ -32,6 +32,7 @@ let faceWarningInProgress = false;
 let faceDetector = null;
 let nearbySearchRequestId = 0;
 let nearbySearchTimer = null;
+let locationControlsReady = Promise.resolve();
 
 function readSavedState() {
   try {
@@ -102,8 +103,8 @@ function showScreen(name, { replace = false } = {}) {
   } else {
     window.history.pushState(state, "", url);
   }
-  if (name === "location" && !locationPromptAttempted && !savedState.country) {
-    requestCurrentLocation();
+  if (name === "location" && !locationPromptAttempted && !detectedLocation) {
+    locationControlsReady.then(() => requestCurrentLocation());
   }
 }
 
@@ -238,6 +239,8 @@ function applyDetectedLocation(location) {
     detectedState: location.state,
     detectedDistrict: location.district,
     detectedTown: location.town,
+    detectedLatitude: latitude,
+    detectedLongitude: longitude,
   });
   document.getElementById("locationPermissionNote")?.replaceChildren();
   updateMapPreview();
@@ -1495,7 +1498,7 @@ window.addEventListener("popstate", (event) => {
 });
 
 window.RomanceAnimations?.makePetals?.();
-initLocationControls();
+locationControlsReady = initLocationControls();
 restoreSavedFormState();
 const urlScreen = new URLSearchParams(window.location.search).get("screen");
 const initialScreen = validScreens.has(urlScreen)
@@ -1509,7 +1512,7 @@ window.history.replaceState({ screen: initialScreen }, "", initialUrl);
 renderScreen(initialScreen);
 updateChatModeUi();
 updatePermissionButton();
-requestCurrentLocation("landingLocationStatus");
+locationControlsReady.then(() => requestCurrentLocation("landingLocationStatus"));
 sendHeartbeat();
 heartbeatTimer = setInterval(sendHeartbeat, 30000);
 statsTimer = setInterval(refreshOnlineStats, 45000);
