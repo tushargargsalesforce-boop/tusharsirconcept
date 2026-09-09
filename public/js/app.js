@@ -103,9 +103,6 @@ function showScreen(name, { replace = false } = {}) {
   } else {
     window.history.pushState(state, "", url);
   }
-  if (name === "location" && !locationPromptAttempted && !detectedLocation) {
-    locationControlsReady.then(() => requestCurrentLocation());
-  }
 }
 
 function restoreSavedFormState() {
@@ -1512,7 +1509,9 @@ window.history.replaceState({ screen: initialScreen }, "", initialUrl);
 renderScreen(initialScreen);
 updateChatModeUi();
 updatePermissionButton();
-locationControlsReady.then(() => requestCurrentLocation("landingLocationStatus"));
+if (initialScreen === "invite") {
+  locationControlsReady.then(() => requestCurrentLocation("landingLocationStatus"));
+}
 sendHeartbeat();
 heartbeatTimer = setInterval(sendHeartbeat, 30000);
 statsTimer = setInterval(refreshOnlineStats, 45000);
