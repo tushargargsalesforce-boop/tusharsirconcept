@@ -456,25 +456,16 @@ function distanceInKm(latitude, longitude, latitudeOffset, longitudeOffset) {
 }
 
 function nearbyPlaces(query = "") {
-  const base = selectedTownPoint || { lat: 0, lng: 0 };
-  const search = query.trim().toLowerCase();
-  const places = nearbyPlaceCatalog
-    .map((place) => ({ ...place, distanceKm: distanceInKm(base.lat, base.lng, place.lat, place.lng) }))
-    .sort((first, second) => first.distanceKm - second.distanceKm);
-
-  if (!search) return places;
-
-  const filtered = places.filter((place) => `${place.name} ${place.description} ${place.tags}`.toLowerCase().includes(search));
-  return filtered.length ? filtered : places;
+  return [];
 }
 
 function cafeCardMarkup(place) {
   const town = selectedGeoName("townSelect") || savedState.town || "nearby town";
   const district = selectedGeoName("districtSelect") || savedState.district || "nearby district";
   return `
-    <div class="cafe-card-top"><span class="cafe-icon">coffee</span><strong>${escapeHtml(place.name)}</strong><span class="cafe-tag">${place.distanceKm.toFixed(1)} km</span></div>
-    <span>${escapeHtml(place.description)}</span>
-    <span>${escapeHtml(place.detail)} · ${escapeHtml(town)}, ${escapeHtml(district)}</span>
+    <div class="cafe-card-top"><span class="cafe-icon">coffee</span><strong>${escapeHtml(place.name)}</strong><span class="cafe-tag">${Number(place.distanceKm || 0).toFixed(1)} km</span></div>
+    <span class="cafe-description">${escapeHtml(place.description)}</span>
+    <span class="cafe-detail">${escapeHtml(place.detail)} · ${escapeHtml(town)}, ${escapeHtml(district)}</span>
     <button class="secondary-btn cafe-date-btn" type="button" data-cafe="${escapeHtml(place.name)}">choose this spot</button>
   `;
 }
@@ -485,6 +476,13 @@ function renderNearbyPlaces(places, query, fallback = false) {
   if (!summary || !results) return;
 
   const town = selectedGeoName("townSelect") || savedState.town || "your town";
+  if (!places.length) {
+    summary.textContent = fallback
+      ? "Live map search is unavailable right now. Try again in a moment."
+      : (query.trim() ? `No real places found within 10 km of ${town}.` : "Type a place name to search the live map.");
+    results.innerHTML = "";
+    return;
+  }
   summary.textContent = fallback
     ? `Showing nearby suggestions within 10 km of ${town}.`
     : `${places.length} place${places.length === 1 ? "" : "s"} found within 10 km of ${town}.`;
@@ -494,9 +492,8 @@ function renderNearbyPlaces(places, query, fallback = false) {
 async function renderNearbySearch() {
   const query = document.getElementById("nearbyPlaceSearch")?.value || "";
   const requestId = ++nearbySearchRequestId;
-  const fallbackPlaces = nearbyPlaces(query);
   if (!selectedTownPoint || !query.trim()) {
-    renderNearbyPlaces(fallbackPlaces, query, false);
+    renderNearbyPlaces([], query, false);
     return;
   }
 
@@ -519,10 +516,10 @@ async function renderNearbySearch() {
       ...place,
       distanceKm: Number(place.distanceKm || 0),
     }));
-    renderNearbyPlaces(places.length ? places : fallbackPlaces, query, !places.length);
+    renderNearbyPlaces(places, query, false);
   } catch (error) {
     if (requestId !== nearbySearchRequestId) return;
-    renderNearbyPlaces(fallbackPlaces, query, true);
+    renderNearbyPlaces([], query, true);
   }
 }
 

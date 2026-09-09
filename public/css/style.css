@@ -1605,6 +1605,12 @@ body.dark-app .screen[data-screen="stranger-chat"] .call-chat {
 }
 
 .cafe-card-top strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cafe-card-top strong {
   min-width: 0;
   margin: 0;
   color: #f7f8ff;
@@ -1638,6 +1644,12 @@ body.dark-app .screen[data-screen="stranger-chat"] .call-chat {
   color: #a9b1c2;
   font-size: .82rem;
   line-height: 1.45;
+}
+
+.cafe-description,
+.cafe-detail {
+  display: block;
+  min-height: 20px;
 }
 
 .cafe-date-btn {
