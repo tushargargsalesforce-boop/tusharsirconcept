@@ -43,6 +43,15 @@ function readSavedState() {
 
 const savedState = readSavedState();
 
+if (savedState.detectedCountry) {
+  detectedLocation = {
+    country: savedState.detectedCountry,
+    state: savedState.detectedState || "",
+    district: savedState.detectedDistrict || "",
+    town: savedState.detectedTown || "",
+  };
+}
+
 function saveState(patch = {}) {
   Object.assign(savedState, patch);
   localStorage.setItem(stateStorageKey, JSON.stringify(savedState));
@@ -225,6 +234,10 @@ function applyDetectedLocation(location) {
     state: location.state,
     district: location.district,
     town: location.town,
+    detectedCountry: location.country,
+    detectedState: location.state,
+    detectedDistrict: location.district,
+    detectedTown: location.town,
   });
   document.getElementById("locationPermissionNote")?.replaceChildren();
   updateMapPreview();
@@ -496,6 +509,10 @@ async function renderNearbySearch() {
       query: query.trim(),
       latitude: selectedTownPoint.lat,
       longitude: selectedTownPoint.lng,
+      country: selectedGeoName("countrySelect"),
+      state: selectedGeoName("stateSelect"),
+      district: selectedGeoName("districtSelect"),
+      town: selectedGeoName("townSelect"),
     });
     if (requestId !== nearbySearchRequestId) return;
     const places = (response.items || []).map((place) => ({
@@ -1246,17 +1263,6 @@ document.getElementById("saveLocationBtn").addEventListener("click", async () =>
   } catch (error) {
     setError("locationError", error.message);
   }
-});
-
-document.getElementById("nearbySearchResults").addEventListener("click", (event) => {
-  const button = event.target.closest(".cafe-date-btn");
-  if (!button) return;
-
-  saveState({ selectedCafe: button.dataset.cafe });
-  document.querySelectorAll(".cafe-date-btn").forEach((item) => {
-    item.textContent = item === button ? "spot selected" : "choose this spot";
-    item.classList.toggle("selected", item === button);
-  });
 });
 
 document.getElementById("nearbyPlaceSearch").addEventListener("input", () => {
