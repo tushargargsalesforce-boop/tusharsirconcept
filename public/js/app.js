@@ -590,12 +590,17 @@ async function refreshOnlineStats() {
   try {
     const stats = await DatingApi.onlineStats(visitorId);
     const total = Number(stats.total_online || 0);
-    document.getElementById("onlineCounter").textContent = `${total.toLocaleString()} online now`;
-    document.getElementById("onlineTotal").textContent = `${total.toLocaleString()} people online right now`;
+    const displayTotal = total.toLocaleString();
+    document.getElementById("onlineCounter").textContent = `${displayTotal} online now`;
+    document.getElementById("onlineTotal").textContent = `${displayTotal} people online right now`;
+    const landingCount = document.getElementById("landingOnlineCount");
+    if (landingCount) landingCount.textContent = displayTotal;
     renderStatsList("countryStats", stats.countries || [], (row) => row.label);
     renderStatsList("stateStats", stats.states || [], (row) => `${row.state}, ${row.country}`);
   } catch (error) {
     document.getElementById("onlineCounter").textContent = "online count unavailable";
+    const landingCount = document.getElementById("landingOnlineCount");
+    if (landingCount) landingCount.textContent = "-";
   }
 }
 
