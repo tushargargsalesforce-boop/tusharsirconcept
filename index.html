@@ -46,36 +46,30 @@
     <section class="screen active landing-screen" data-screen="invite">
       <div class="landing-layout">
         <div class="landing-copy">
-          <div class="live-pill"><span></span> MEET SOMEONE NEW IN UNDER 3 SECONDS</div>
-          <h1>One click. <em>One stranger.</em><br>A conversation you didn’t plan.</h1>
-          <p class="landing-lede">Free live text and video chat with real people around the world.<br>No account, no history — just say hi and skip whenever you like.</p>
+          <div class="live-pill"><span></span> LIVE · <strong id="landingOnlineCount">0</strong> STRANGERS ONLINE</div>
+          <h1>Talk with<br>strangers,<br><em>instantly.</em></h1>
+          <p class="landing-lede">Jump into a random video chat or book a private date with someone new. No profiles to build, no waiting — just press a button and start talking.</p>
+          <div class="landing-actions">
+            <button class="landing-primary" id="landingStartBtn" type="button"><span class="play-icon">▶</span> Random Video Chat</button>
+            <button class="landing-secondary" data-next="date" type="button">Book a Date</button>
+          </div>
           <p class="landing-location-status" id="landingLocationStatus">Requesting your approximate country and state...</p>
+          <p class="landing-note">Free to start · 18+ only · Be respectful</p>
           <p class="error-message" id="inviteErrorLanding"></p>
         </div>
         <div class="landing-preview-column">
-          <article class="preview-card landing-chat-preview">
-            <div class="preview-heading"><strong>Stranger live chat</strong><span>CHAT</span></div>
-            <div class="landing-gate-preview">
-              <label>Age <input type="number" value="20" min="18" max="99" aria-label="Age preview"></label>
-              <label>I am <select aria-label="Gender preview"><option>Girl</option><option>Boy</option><option>Other</option></select></label>
-              <span class="preview-confirm">✓ I am 18+ and respectful.</span>
-              <button class="landing-primary" id="landingStartBtn" type="button">find person</button>
-            </div>
-            <div class="landing-mode-preview"><span class="active">Text Chat</span><span>Video Chat</span></div>
-            <p class="landing-chat-note">Adults only. One click connects you with a random person. Skip anytime.</p>
-            <div class="landing-chat-status"><span></span> Ready to meet someone new</div>
-            <div class="landing-messages"><p>You are now chatting with a random person. Say hi!</p><div>Hey, nice to meet you. What music are you into?</div></div>
-            <div class="landing-composer"><span>Type a message...</span><b>➤</b></div>
-            <div class="preview-actions"><button class="landing-primary" type="button" id="previewStartBtn">start chatting now</button><button class="skip-preview" type="button" id="landingSkipBtn">skip</button></div>
+          <article class="preview-card">
+            <div class="preview-heading"><strong>Random Video Chat</strong><span>VIDEO · CHAT</span></div>
+            <div class="preview-video"><img src="public/assets/couple.svg" alt="Friendly people chatting"><div class="preview-play">▶</div></div>
+            <div class="preview-actions"><button class="landing-primary" type="button" id="previewStartBtn">Start chatting now</button><button class="skip-preview" type="button" id="landingSkipBtn">Skip</button></div>
           </article>
           <article class="date-teaser"><div class="date-icon">D</div><div><strong>Book a Date</strong><p>Pick a slot with a random match and meet up in your own time.</p></div><button data-next="date" type="button">Pick slot</button></article>
         </div>
       </div>
-      <h2 class="landing-section-title">How it works</h2>
       <div class="landing-features">
-        <article><span class="feature-icon">♢</span><h2>Confirm you’re 18+</h2><p>Set your age and gender, then tick the respect pledge.</p></article>
-        <article><span class="feature-icon purple">ϟ</span><h2>Hit find person</h2><p>We drop you into a live room with a random stranger.</p></article>
-        <article><span class="feature-icon green">✧</span><h2>Talk or skip</h2><p>Text, switch to video, or skip to the next person instantly.</p></article>
+        <article><span class="feature-icon">◇</span><h2>Zero friction</h2><p>No signup walls. One tap drops you into a live conversation with a stranger.</p></article>
+        <article><span class="feature-icon purple">◷</span><h2>Date on your clock</h2><p>Reserve a private video date and choose the time that fits your day.</p></article>
+        <article><span class="feature-icon green">✓</span><h2>Moderated &amp; safe</h2><p>Report any user instantly. Keep conversations kind and private.</p></article>
       </div>
       <div class="landing-terms" id="terms">
         <strong>¶ &nbsp; Terms &amp; Conditions</strong>
