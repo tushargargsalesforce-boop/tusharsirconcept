@@ -369,6 +369,7 @@ function renderMapPins(matches) {
 
 function updateMapPreview() {
   const map = document.getElementById("approxMap");
+  if (!map) return;
   const status = document.getElementById("mapStatus");
   const userPin = map.querySelector(".user-pin");
 
@@ -385,6 +386,33 @@ function updateMapPreview() {
   const district = selectedGeoName("districtSelect");
   status.textContent = `${town}, ${district} · approx ${selectedTownPoint.lat.toFixed(4)}, ${selectedTownPoint.lng.toFixed(4)}`;
   userPin.textContent = "You";
+}
+
+function renderNearbyCafes() {
+  const list = document.getElementById("matchList");
+  const town = selectedGeoName("townSelect") || savedState.town || "your town";
+  const district = selectedGeoName("districtSelect") || savedState.district || "nearby district";
+  const cafes = [
+    ["The Daily Grind", "Quiet coffee and conversation", "Best for a relaxed first date"],
+    ["Brew & Bloom", "Coffee, pastries, and soft music", "Good for an easy afternoon date"],
+    ["Bean Street Cafe", "Fresh brews and a casual table", "Good for a short meet-up"],
+    ["The Cozy Cup", "Warm drinks and comfortable seating", "Best for an evening coffee date"],
+    ["Roast House", "Specialty coffee and light bites", "Good for a longer conversation"],
+    ["Corner Cafe", "Simple coffee date near the town centre", "Easy to reach from nearby areas"],
+  ];
+
+  list.innerHTML = "";
+  cafes.forEach(([name, description, detail]) => {
+    const item = document.createElement("div");
+    item.className = "match-item cafe-item";
+    item.innerHTML = `
+      <div class="cafe-card-top"><span class="cafe-icon">coffee</span><strong>${escapeHtml(name)}</strong><span class="cafe-tag">coffee date</span></div>
+      <span>${escapeHtml(description)}</span>
+      <span>${escapeHtml(detail)} · ${escapeHtml(town)}, ${escapeHtml(district)}</span>
+      <button class="secondary-btn cafe-date-btn" type="button" data-cafe="${escapeHtml(name)}">choose this spot</button>
+    `;
+    list.appendChild(item);
+  });
 }
 
 function renderMatches(matches) {
@@ -1113,13 +1141,23 @@ document.getElementById("saveLocationBtn").addEventListener("click", async () =>
       longitude: selectedTownPoint.lng,
       search_radius_km: 10,
     });
-    const response = await DatingApi.matches(visitorId);
-    renderMatches(response.matches || []);
+    renderNearbyCafes();
     await sendHeartbeat();
     showScreen("matches");
   } catch (error) {
     setError("locationError", error.message);
   }
+});
+
+document.getElementById("matchList").addEventListener("click", (event) => {
+  const button = event.target.closest(".cafe-date-btn");
+  if (!button) return;
+
+  saveState({ selectedCafe: button.dataset.cafe });
+  document.querySelectorAll(".cafe-date-btn").forEach((item) => {
+    item.textContent = item === button ? "spot selected" : "choose this spot";
+    item.classList.toggle("selected", item === button);
+  });
 });
 
 function requestCurrentLocation(statusId = "locationError", buttonId = "useCurrentLocationBtn") {

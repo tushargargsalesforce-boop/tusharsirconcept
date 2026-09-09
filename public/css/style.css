@@ -1516,6 +1516,103 @@ body.dark-app .screen[data-screen="stranger-chat"] .call-chat {
   }
 }
 
+.nearby-date-note {
+  display: grid;
+  gap: 5px;
+  margin: 22px 0 16px;
+  padding: 16px 18px;
+  border: 1px solid #354056;
+  border-radius: 16px;
+  background: #121b2d;
+  color: #f7f8ff;
+  text-align: left;
+}
+
+.nearby-date-note span {
+  color: #a9b1c2;
+  font-size: .84rem;
+}
+
+.nearby-date-note strong {
+  color: #ff9a82;
+}
+
+.match-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cafe-item {
+  display: grid;
+  gap: 8px;
+  min-height: 190px;
+  background: #121b2d;
+}
+
+.cafe-card-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.cafe-card-top strong {
+  min-width: 0;
+  margin: 0;
+  color: #f7f8ff;
+}
+
+.cafe-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #3b2940;
+  color: #ff9a82;
+  font-size: .62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cafe-tag {
+  margin-left: auto;
+  padding: 5px 8px;
+  border: 1px solid #684b67;
+  border-radius: 999px;
+  color: #e5a0dc;
+  font-size: .67rem;
+  white-space: nowrap;
+}
+
+.cafe-item span:not(.cafe-icon):not(.cafe-tag) {
+  color: #a9b1c2;
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+.cafe-date-btn {
+  align-self: end;
+  width: 100%;
+  min-height: 38px;
+  margin-top: 5px;
+  border-color: #46526b;
+  background: #1a263b;
+  color: #f7f8ff;
+}
+
+.cafe-date-btn.selected {
+  border-color: #ff8069;
+  background: linear-gradient(100deg, #ff774d, #ed5f92);
+  color: #1b1420;
+}
+
+@media (max-width: 700px) {
+  .match-list {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Exact desktop home composition: hero copy stays beside the preview card. */
 @media (min-width: 821px) {
   body:has(.landing-screen.active) .chat-topbar {

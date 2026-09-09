@@ -190,21 +190,16 @@
           <label for="townSelect">Town</label>
           <select id="townSelect" disabled></select>
         </div>
-        <div class="radius-control"><span>Search radius</span><strong>10 km</strong></div>
-        <div class="approx-map" id="approxMap" aria-label="Approximate nearby match map">
-          <div class="map-ring"></div>
-          <div class="map-pin user-pin">You</div>
-          <p class="map-status" id="mapStatus">Select your town to preview the 10 km area.</p>
-        </div>
-        <button class="primary-btn" id="saveLocationBtn" type="button">show nearby matches 💘</button>
+        <div class="nearby-date-note"><strong>Nearby coffee dates</strong><span>Suggestions are prepared from your selected district and town.</span></div>
+        <button class="primary-btn" id="saveLocationBtn" type="button">find nearby cafe dates 💘</button>
         <p class="error-message" id="locationError"></p>
       </div>
     </section>
 
     <section class="screen" data-screen="matches">
       <div class="panel match-panel">
-        <h2>Soft matches around you 💌</h2>
-        <p class="tiny-note">Only approximate area details are shown.</p>
+        <h2>Nearby cafe dates ☕</h2>
+        <p class="tiny-note">Coffee spots are listed for your selected district and town.</p>
         <div class="match-list" id="matchList"></div>
         <button class="primary-btn" data-next="final" type="button">continue →</button>
       </div>
@@ -289,6 +284,6 @@
 
   <script src="public/js/api.js?v=20260908-flow"></script>
   <script src="public/js/animations.js?v=20260908-flow"></script>
-  <script src="public/js/app.js?v=20260909-reference-landing"></script>
+  <script src="public/js/app.js?v=20260909-cafe-dates"></script>
 </body>
 </html>
