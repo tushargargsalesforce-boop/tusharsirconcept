@@ -31,6 +31,7 @@ let faceMissingSince = 0;
 let faceWarningInProgress = false;
 let faceDetector = null;
 let nearbySearchRequestId = 0;
+let nearbySearchTimer = null;
 
 function readSavedState() {
   try {
@@ -1258,7 +1259,10 @@ document.getElementById("nearbySearchResults").addEventListener("click", (event)
   });
 });
 
-document.getElementById("nearbyPlaceSearch").addEventListener("input", renderNearbySearch);
+document.getElementById("nearbyPlaceSearch").addEventListener("input", () => {
+  clearTimeout(nearbySearchTimer);
+  nearbySearchTimer = setTimeout(renderNearbySearch, 350);
+});
 document.getElementById("nearbySearchResults").addEventListener("click", (event) => {
   const button = event.target.closest(".cafe-date-btn");
   if (!button) return;

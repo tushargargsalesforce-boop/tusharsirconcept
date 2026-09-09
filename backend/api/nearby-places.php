@@ -2,10 +2,12 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/helpers.php';
+load_env_file(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env');
 
 require_post();
 $data = read_json_body();
 $query = trim((string)($data['query'] ?? ''));
+$apiKey = trim((string)(getenv('GEOAPIFY_API_KEY') ?: ''));
 $latitude = filter_var($data['latitude'] ?? null, FILTER_VALIDATE_FLOAT);
 $longitude = filter_var($data['longitude'] ?? null, FILTER_VALIDATE_FLOAT);
 
@@ -17,6 +19,10 @@ if ($latitude === false || $longitude === false || $latitude < -90 || $latitude 
     json_response(['success' => false, 'message' => 'Valid coordinates are required'], 422);
 }
 
+if ($apiKey === '') {
+    json_response(['success' => false, 'message' => 'Geoapify API key is missing on the server'], 500);
+}
+
 $term = preg_replace('/[^\p{L}\p{N} ._-]/u', ' ', $query) ?: '';
 $term = trim($term);
 if ($term === '') {
@@ -25,26 +31,13 @@ if ($term === '') {
 
 $lat = number_format((float)$latitude, 6, '.', '');
 $lng = number_format((float)$longitude, 6, '.', '');
-$searchTerms = [strtolower($term)];
-foreach ([
-    'coffee' => ['cafe', 'coffee'],
-    'cafe' => ['cafe', 'coffee'],
-    'bakery' => ['bakery', 'bread', 'pastry'],
-    'pizza' => ['pizza', 'italian'],
-    'burger' => ['burger', 'hamburger'],
-    'breakfast' => ['breakfast', 'brunch'],
-    'brunch' => ['breakfast', 'brunch'],
-] as $keyword => $relatedTerms) {
-    if (stripos(strtolower($term), $keyword) !== false) {
-        $searchTerms = array_merge($searchTerms, $relatedTerms);
-    }
-}
-$overpassQuery = '[out:json][timeout:12];'
-    . 'nwr(around:10000,' . $lat . ',' . $lng . ')'
-    . '[amenity~"cafe|restaurant|fast_food|bar|food_court|bakery",i];'
-    . 'out center tags;';
-
-$body = overpass_request($overpassQuery);
+$params = [
+    'categories' => 'catering.cafe,catering.restaurant,catering.fast_food,catering.bakery,commercial.supermarket',
+    'filter' => 'circle:' . $lng . ',' . $lat . ',10000',
+    'limit' => 20,
+    'apiKey' => $apiKey,
+];
+$body = geoapify_request($params);
 if ($body === '') {
     json_response(['success' => false, 'message' => 'Map search is temporarily unavailable'], 502);
 }
@@ -56,20 +49,28 @@ if (!is_array($decoded)) {
 
 $items = [];
 $seen = [];
-foreach (($decoded['elements'] ?? []) as $element) {
-    $tags = $element['tags'] ?? [];
-    $name = trim((string)($tags['name'] ?? ''));
-    $placeLatitude = isset($element['lat']) ? (float)$element['lat'] : (float)($element['center']['lat'] ?? 0);
-    $placeLongitude = isset($element['lon']) ? (float)$element['lon'] : (float)($element['center']['lon'] ?? 0);
+foreach (($decoded['features'] ?? []) as $feature) {
+    $properties = $feature['properties'] ?? [];
+    $name = trim((string)($properties['name'] ?? $properties['address_line1'] ?? ''));
+    $placeLatitude = (float)($properties['lat'] ?? 0);
+    $placeLongitude = (float)($properties['lon'] ?? 0);
     if ($name === '' || !$placeLatitude || !$placeLongitude) continue;
 
     $key = strtolower($name . '|' . $placeLatitude . '|' . $placeLongitude);
     if (isset($seen[$key])) continue;
     $seen[$key] = true;
 
-    $amenity = trim((string)($tags['amenity'] ?? 'cafe'));
-    $cuisine = trim((string)($tags['cuisine'] ?? ''));
-    $searchHaystack = strtolower($name . ' ' . $amenity . ' ' . $cuisine);
+    $categories = is_array($properties['categories'] ?? null)
+        ? implode(' ', $properties['categories'])
+        : (string)($properties['categories'] ?? '');
+    $searchHaystack = strtolower($name . ' ' . $categories . ' ' . ($properties['city'] ?? '') . ' ' . ($properties['suburb'] ?? ''));
+    $searchTerms = [strtolower($term)];
+    if (stripos($term, 'coffee') !== false || stripos($term, 'cafe') !== false) {
+        $searchTerms = array_merge($searchTerms, ['cafe', 'coffee']);
+    }
+    if (stripos($term, 'bakery') !== false) $searchTerms[] = 'bakery';
+    if (stripos($term, 'pizza') !== false) $searchTerms[] = 'pizza';
+    if (stripos($term, 'burger') !== false) $searchTerms[] = 'burger';
     $matchesSearch = false;
     foreach ($searchTerms as $searchTerm) {
         if (stripos($searchHaystack, $searchTerm) !== false) {
@@ -78,13 +79,14 @@ foreach (($decoded['elements'] ?? []) as $element) {
         }
     }
     if (!$matchesSearch) continue;
+    $category = str_contains($categories, 'bakery') ? 'Bakery' : (str_contains($categories, 'cafe') ? 'Cafe' : 'Food place');
     $distance = distance_km((float)$latitude, (float)$longitude, $placeLatitude, $placeLongitude);
     if ($distance > 10) continue;
 
     $items[] = [
         'name' => $name,
-        'description' => ucfirst(str_replace('_', ' ', $amenity)),
-        'detail' => 'Found on the nearby map',
+        'description' => $category,
+        'detail' => trim((string)($properties['address_line2'] ?? $properties['city'] ?? 'Found on Geoapify map')),
         'distanceKm' => round($distance, 1),
         'lat' => $placeLatitude,
         'lng' => $placeLongitude,
@@ -104,15 +106,13 @@ function distance_km(float $latOne, float $lngOne, float $latTwo, float $lngTwo)
     return $earthRadius * 2 * atan2(sqrt($a), sqrt(1 - $a));
 }
 
-function overpass_request(string $query): string
+function geoapify_request(array $params): string
 {
-    $url = 'https://overpass-api.de/api/interpreter';
+    $url = 'https://api.geoapify.com/v2/places?' . http_build_query($params);
     if (function_exists('curl_init')) {
         $curl = curl_init($url);
         curl_setopt_array($curl, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => http_build_query(['data' => $query]),
             CURLOPT_CONNECTTIMEOUT => 8,
             CURLOPT_TIMEOUT => 15,
             CURLOPT_SSL_VERIFYPEER => true,
@@ -123,14 +123,7 @@ function overpass_request(string $query): string
         return $body === false ? '' : (string)$body;
     }
 
-    $context = stream_context_create([
-        'http' => [
-            'method' => 'POST',
-            'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-            'content' => http_build_query(['data' => $query]),
-            'timeout' => 15,
-        ],
-    ]);
+    $context = stream_context_create(['http' => ['method' => 'GET', 'timeout' => 15]]);
     $body = file_get_contents($url, false, $context);
     return $body === false ? '' : (string)$body;
 }
