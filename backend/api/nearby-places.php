@@ -85,6 +85,7 @@ foreach (($decoded['features'] ?? []) as $feature) {
 
     $items[] = [
         'name' => $name,
+        'placeId' => (string)($properties['place_id'] ?? $properties['datasource']['raw']['id'] ?? ''),
         'description' => $category,
         'detail' => trim((string)($properties['address_line2'] ?? $properties['city'] ?? 'Found on Geoapify map')),
         'distanceKm' => round($distance, 1),

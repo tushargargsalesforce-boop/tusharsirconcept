@@ -1662,6 +1662,32 @@ body.dark-app .screen[data-screen="stranger-chat"] .call-chat {
   color: #f7f8ff;
 }
 
+.cafe-details-btn {
+  width: 100%;
+  min-height: 34px;
+  margin-top: 2px;
+  border-color: #46526b;
+  background: transparent;
+  color: #a9baff;
+  font-size: .78rem;
+}
+
+.cafe-details {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid #354056;
+  border-radius: 10px;
+  background: #0d1628;
+  color: #a9b1c2;
+  font-size: .76rem;
+  line-height: 1.4;
+}
+
+.cafe-details strong {
+  color: #f7f8ff;
+}
+
 .cafe-date-btn.selected {
   border-color: #ff8069;
   background: linear-gradient(100deg, #ff774d, #ed5f92);

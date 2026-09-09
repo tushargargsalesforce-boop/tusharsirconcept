@@ -69,5 +69,6 @@
     onlineStats: (visitorId) => request("online-stats.php", { visitor_id: visitorId }),
     geonames: (payload) => request("geonames.php", payload),
     nearbyPlaces: (payload) => request("nearby-places.php", payload),
+    placeDetails: (placeId) => request("place-details.php", { place_id: placeId }),
   };
 })();

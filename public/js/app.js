@@ -466,6 +466,7 @@ function cafeCardMarkup(place) {
     <div class="cafe-card-top"><span class="cafe-icon">coffee</span><strong>${escapeHtml(place.name)}</strong><span class="cafe-tag">${Number(place.distanceKm || 0).toFixed(1)} km</span></div>
     <span class="cafe-description">${escapeHtml(place.description)}</span>
     <span class="cafe-detail">${escapeHtml(place.detail)} · ${escapeHtml(town)}, ${escapeHtml(district)}</span>
+    ${place.placeId ? `<button class="secondary-btn cafe-details-btn" type="button" data-place-id="${escapeHtml(place.placeId)}">view details</button>` : ""}
     <button class="secondary-btn cafe-date-btn" type="button" data-cafe="${escapeHtml(place.name)}">choose this spot</button>
   `;
 }
@@ -1267,6 +1268,30 @@ document.getElementById("nearbyPlaceSearch").addEventListener("input", () => {
   nearbySearchTimer = setTimeout(renderNearbySearch, 350);
 });
 document.getElementById("nearbySearchResults").addEventListener("click", (event) => {
+  const detailsButton = event.target.closest(".cafe-details-btn");
+  if (detailsButton) {
+    const card = detailsButton.closest(".nearby-result");
+    let details = card.querySelector(".cafe-details");
+    if (details) {
+      details.hidden = !details.hidden;
+      return;
+    }
+    detailsButton.disabled = true;
+    detailsButton.textContent = "loading details...";
+    DatingApi.placeDetails(detailsButton.dataset.placeId).then((response) => {
+      details = document.createElement("div");
+      details.className = "cafe-details";
+      const item = response.details || {};
+      details.innerHTML = `<strong>${escapeHtml(item.name || "Place details")}</strong><span>${escapeHtml(item.address || "Address unavailable")}</span>${item.phone ? `<span>${escapeHtml(item.phone)}</span>` : ""}${item.openingHours ? `<span>${escapeHtml(item.openingHours)}</span>` : ""}`;
+      card.appendChild(details);
+      detailsButton.textContent = "hide details";
+      detailsButton.disabled = false;
+    }).catch(() => {
+      detailsButton.textContent = "details unavailable";
+      detailsButton.disabled = false;
+    });
+    return;
+  }
   const button = event.target.closest(".cafe-date-btn");
   if (!button) return;
   saveState({ selectedCafe: button.dataset.cafe });
