@@ -29,7 +29,8 @@ function load_env_file(string $path): void
         $key = trim($key);
         $value = trim($value, " \t\n\r\0\x0B\"'");
 
-        if ($key !== '' && getenv($key) === false) {
+        $existingValue = getenv($key);
+        if ($key !== '' && ($existingValue === false || $existingValue === '')) {
             putenv($key . '=' . $value);
             $_ENV[$key] = $value;
         }
