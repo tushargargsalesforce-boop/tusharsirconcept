@@ -149,7 +149,7 @@ json_response(['success' => false, 'message' => 'Invalid GeoNames action'], 422)
 
 function geonames_request(string $service, array $params): array
 {
-    $url = 'http://api.geonames.org/' . $service . '?' . http_build_query($params);
+    $url = 'https://secure.geonames.org/' . $service . '?' . http_build_query($params);
     $body = http_get($url);
 
     if ($body === '') {

@@ -214,6 +214,14 @@ function applyDetectedLocation(location) {
   document.getElementById("townSelect").value = String(town.geonameId);
   selectedTownPoint = { lat: latitude, lng: longitude };
   detectedLocation = location;
+  saveState({
+    country: location.country,
+    state: location.state,
+    district: location.district,
+    town: location.town,
+  });
+  document.getElementById("locationPermissionNote").textContent =
+    `Detected: ${location.country}, ${location.state}. Exact coordinates stay private.`;
   updateMapPreview();
 }
 
