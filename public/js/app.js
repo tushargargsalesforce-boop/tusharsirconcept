@@ -1174,10 +1174,6 @@ function requestCurrentLocation(statusId = "locationError", buttonId = "useCurre
 }
 
 document.getElementById("useCurrentLocationBtn").addEventListener("click", requestCurrentLocation);
-document.getElementById("landingLocationBtn")?.addEventListener("click", () => {
-  requestCurrentLocation("landingLocationStatus", "landingLocationBtn");
-});
-
 document.getElementById("acceptBtn").addEventListener("click", async () => {
   setError("acceptError");
 
@@ -1358,6 +1354,7 @@ window.history.replaceState({ screen: initialScreen }, "", initialUrl);
 renderScreen(initialScreen);
 updateChatModeUi();
 updatePermissionButton();
+requestCurrentLocation("landingLocationStatus");
 sendHeartbeat();
 heartbeatTimer = setInterval(sendHeartbeat, 30000);
 statsTimer = setInterval(refreshOnlineStats, 45000);
