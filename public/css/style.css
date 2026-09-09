@@ -1561,3 +1561,68 @@ body.dark-app .screen[data-screen="stranger-chat"] .call-chat {
     max-height: 90%;
   }
 }
+
+/* Chat entry screen follows the reference while keeping the existing controls functional. */
+.screen[data-screen="stranger-chat"] {
+  width: min(100%, 1400px);
+}
+
+.chat-landing-intro {
+  padding: 28px 0 48px;
+  text-align: center;
+}
+
+.chat-speed-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border: 1px solid #263852;
+  border-radius: 999px;
+  background: #121e32;
+  color: #a9b5c9;
+  font-size: .78rem;
+}
+
+.chat-speed-pill span {
+  color: #ff774d;
+  font-size: 1.05rem;
+}
+
+.chat-landing-intro h1 {
+  margin: 34px 0 22px;
+  color: #f7f8ff;
+  font-size: clamp(3rem, 5.3vw, 5.15rem);
+  line-height: 1.02;
+}
+
+.chat-landing-intro h1 em {
+  color: #ff765d;
+  font-style: normal;
+}
+
+.chat-landing-intro p {
+  margin: 0;
+  color: #a9b5c9;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.screen[data-screen="stranger-chat"] .chat-panel {
+  max-width: none;
+}
+
+@media (max-width: 820px) {
+  .chat-landing-intro {
+    padding: 18px 0 28px;
+  }
+
+  .chat-landing-intro h1 {
+    margin-top: 24px;
+    font-size: clamp(2.35rem, 11vw, 4rem);
+  }
+
+  .chat-landing-intro p {
+    font-size: .92rem;
+  }
+}
