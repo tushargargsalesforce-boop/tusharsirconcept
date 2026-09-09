@@ -227,6 +227,7 @@ function applyDetectedLocation(location) {
   document.getElementById("locationPermissionNote").textContent =
     `Detected: ${location.country}, ${location.state}. Exact coordinates stay private.`;
   updateMapPreview();
+  renderNearbySearch();
 }
 
 async function initLocationControls() {
@@ -339,6 +340,7 @@ async function initLocationControls() {
       ? { lat: selectedTown.lat, lng: selectedTown.lng }
       : null;
     updateMapPreview();
+    renderNearbySearch();
   });
 }
 
@@ -413,6 +415,68 @@ function renderNearbyCafes() {
     `;
     list.appendChild(item);
   });
+}
+
+const nearbyPlaceCatalog = [
+  { name: "The Daily Grind", description: "Quiet coffee and conversation", detail: "Relaxed first date", tags: "cafe coffee" , lat: 0.012, lng: 0.008 },
+  { name: "Brew & Bloom", description: "Coffee, pastries, and soft music", detail: "Easy afternoon date", tags: "cafe coffee bakery brunch", lat: 0.018, lng: -0.014 },
+  { name: "Bean Street Cafe", description: "Fresh brews and a casual table", detail: "Good for a short meet-up", tags: "cafe coffee", lat: -0.021, lng: 0.011 },
+  { name: "The Cozy Cup", description: "Warm drinks and comfortable seating", detail: "Evening coffee date", tags: "cafe coffee tea", lat: 0.028, lng: 0.019 },
+  { name: "Roast House", description: "Specialty coffee and light bites", detail: "Longer conversation", tags: "coffee brunch restaurant", lat: -0.034, lng: -0.022 },
+  { name: "Corner Cafe", description: "Simple coffee date near the town centre", detail: "Easy to reach nearby", tags: "cafe coffee", lat: 0.041, lng: -0.031 },
+  { name: "Sunrise Bakery", description: "Fresh bakes, tea, and breakfast", detail: "Morning coffee date", tags: "bakery breakfast brunch coffee", lat: -0.052, lng: 0.026 },
+  { name: "Green Leaf Bistro", description: "Cafe meals and a quiet garden table", detail: "Lunch date option", tags: "restaurant cafe lunch", lat: 0.061, lng: 0.034 },
+  { name: "Moonlight Coffee", description: "Desserts and late coffee", detail: "Cosy evening option", tags: "coffee desserts cafe", lat: -0.067, lng: -0.038 },
+  { name: "Town Square Cafe", description: "Central seating for an easy meet-up", detail: "Good for first meetings", tags: "cafe coffee restaurant", lat: 0.074, lng: -0.046 },
+];
+
+function distanceInKm(latitude, longitude, latitudeOffset, longitudeOffset) {
+  const earthRadius = 6371;
+  const lat1 = latitude * Math.PI / 180;
+  const lat2 = (latitude + latitudeOffset) * Math.PI / 180;
+  const deltaLat = latitudeOffset * Math.PI / 180;
+  const deltaLng = longitudeOffset * Math.PI / 180;
+  const haversine = Math.sin(deltaLat / 2) ** 2
+    + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
+  return earthRadius * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+}
+
+function nearbyPlaces(query = "") {
+  const base = selectedTownPoint || { lat: 0, lng: 0 };
+  const search = query.trim().toLowerCase();
+  return nearbyPlaceCatalog
+    .map((place) => ({ ...place, distanceKm: distanceInKm(base.lat, base.lng, place.lat, place.lng) }))
+    .filter((place) => !search || `${place.name} ${place.description} ${place.tags}`.toLowerCase().includes(search))
+    .sort((first, second) => first.distanceKm - second.distanceKm);
+}
+
+function cafeCardMarkup(place) {
+  const town = selectedGeoName("townSelect") || savedState.town || "nearby town";
+  const district = selectedGeoName("districtSelect") || savedState.district || "nearby district";
+  return `
+    <div class="cafe-card-top"><span class="cafe-icon">coffee</span><strong>${escapeHtml(place.name)}</strong><span class="cafe-tag">${place.distanceKm.toFixed(1)} km</span></div>
+    <span>${escapeHtml(place.description)}</span>
+    <span>${escapeHtml(place.detail)} · ${escapeHtml(town)}, ${escapeHtml(district)}</span>
+    <button class="secondary-btn cafe-date-btn" type="button" data-cafe="${escapeHtml(place.name)}">choose this spot</button>
+  `;
+}
+
+function renderNearbySearch() {
+  const query = document.getElementById("nearbyPlaceSearch")?.value || "";
+  const places = nearbyPlaces(query);
+  const summary = document.getElementById("nearbySearchSummary");
+  const results = document.getElementById("nearbySearchResults");
+  if (!summary || !results) return;
+
+  const town = selectedGeoName("townSelect") || savedState.town || "your town";
+  summary.textContent = `${places.length} place${places.length === 1 ? "" : "s"} found within 10 km of ${town}.`;
+  results.innerHTML = places.slice(0, 5).map((place) => `<article class="nearby-result">${cafeCardMarkup(place)}</article>`).join("");
+}
+
+function renderNearbyCafes() {
+  const list = document.getElementById("matchList");
+  const places = nearbyPlaces();
+  list.innerHTML = places.map((place) => `<div class="match-item cafe-item">${cafeCardMarkup(place)}</div>`).join("");
 }
 
 function renderMatches(matches) {
@@ -1157,6 +1221,17 @@ document.getElementById("matchList").addEventListener("click", (event) => {
   saveState({ selectedCafe: button.dataset.cafe });
   document.querySelectorAll(".cafe-date-btn").forEach((item) => {
     item.textContent = item === button ? "spot selected" : "choose this spot";
+    item.classList.toggle("selected", item === button);
+  });
+});
+
+document.getElementById("nearbyPlaceSearch").addEventListener("input", renderNearbySearch);
+document.getElementById("nearbySearchResults").addEventListener("click", (event) => {
+  const button = event.target.closest(".cafe-date-btn");
+  if (!button) return;
+  saveState({ selectedCafe: button.dataset.cafe });
+  document.querySelectorAll(".cafe-date-btn").forEach((item) => {
+    item.textContent = item.dataset.cafe === button.dataset.cafe ? "spot selected" : "choose this spot";
     item.classList.toggle("selected", item === button);
   });
 });

@@ -191,6 +191,10 @@
           <select id="townSelect" disabled></select>
         </div>
         <div class="nearby-date-note"><strong>Nearby coffee dates</strong><span>Suggestions are prepared from your selected district and town.</span></div>
+        <label class="nearby-search-label" for="nearbyPlaceSearch">Search a nearby place</label>
+        <input id="nearbyPlaceSearch" class="nearby-place-search" type="search" placeholder="Try cafe, coffee, bakery, brunch..." autocomplete="off">
+        <div class="nearby-search-summary" id="nearbySearchSummary">Choose a town to see places within 10 km.</div>
+        <div class="nearby-search-results" id="nearbySearchResults"></div>
         <button class="primary-btn" id="saveLocationBtn" type="button">find nearby cafe dates 💘</button>
         <p class="error-message" id="locationError"></p>
       </div>
