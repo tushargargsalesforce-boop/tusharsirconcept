@@ -1296,9 +1296,15 @@ document.getElementById("saveLocationBtn").addEventListener("click", async () =>
   const state = selectedGeoName("stateSelect");
   const district = selectedGeoName("districtSelect");
   const town = selectedGeoName("townSelect");
+  const selectedCafe = savedState.selectedCafe || "";
 
   if (!country || !state || !district || !town || !selectedTownPoint) {
     setError("locationError", "Choose your country, state, district, and town.");
+    return;
+  }
+
+  if (!selectedCafe) {
+    setError("locationError", "Choose this spot first, then find nearby cafe dates.");
     return;
   }
 
