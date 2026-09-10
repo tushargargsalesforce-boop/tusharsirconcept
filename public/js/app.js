@@ -510,6 +510,12 @@ function renderNearbyPlaces(places, query, fallback = false) {
 
 async function renderNearbySearch() {
   const searchInput = document.getElementById("nearbyPlaceSearch");
+  if (!selectedTownPoint) {
+    const selectedTown = selectedGeoOption(document.getElementById("townSelect"));
+    if (selectedTown && Number.isFinite(selectedTown.lat) && Number.isFinite(selectedTown.lng)) {
+      selectedTownPoint = { lat: selectedTown.lat, lng: selectedTown.lng };
+    }
+  }
   if (searchInput) {
     searchInput.disabled = !selectedTownPoint;
     searchInput.placeholder = selectedTownPoint
