@@ -537,15 +537,27 @@ async function renderNearbySearch() {
   const summary = document.getElementById("nearbySearchSummary");
   if (summary) summary.textContent = "Searching nearby map places...";
 
+  const country = selectedGeoName("countrySelect");
+  const state = selectedGeoName("stateSelect");
+  const district = selectedGeoName("districtSelect");
+  const town = selectedGeoName("townSelect");
+
+  if (!country || !state || !district || !town) {
+    const summary = document.getElementById("nearbySearchSummary");
+    if (summary) summary.textContent = "Select country, state, district, and town before searching.";
+    renderNearbyPlaces([], query, false);
+    return;
+  }
+
   try {
     const response = await DatingApi.nearbyPlaces({
       query: query.trim(),
+      country,
+      state,
+      district,
+      town,
       latitude: selectedTownPoint.lat,
       longitude: selectedTownPoint.lng,
-      country: selectedGeoName("countrySelect"),
-      state: selectedGeoName("stateSelect"),
-      district: selectedGeoName("districtSelect"),
-      town: selectedGeoName("townSelect"),
     });
     if (requestId !== nearbySearchRequestId) return;
     const places = (response.items || []).map((place) => ({
