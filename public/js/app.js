@@ -1323,10 +1323,11 @@ document.getElementById("saveLocationBtn").addEventListener("click", async () =>
     });
     renderNearbyCafes();
     await sendHeartbeat();
-    document.getElementById("nearbySearchResults")?.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
     setError("locationError", error.message);
   }
+
+  showScreen("final");
 });
 
 document.getElementById("nearbyPlaceSearch").addEventListener("input", () => {
