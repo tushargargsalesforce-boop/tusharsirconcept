@@ -509,7 +509,14 @@ function renderNearbyPlaces(places, query, fallback = false) {
 }
 
 async function renderNearbySearch() {
-  const query = document.getElementById("nearbyPlaceSearch")?.value || "";
+  const searchInput = document.getElementById("nearbyPlaceSearch");
+  if (searchInput) {
+    searchInput.disabled = !selectedTownPoint;
+    searchInput.placeholder = selectedTownPoint
+      ? "Try cafe, coffee, bakery, brunch..."
+      : "Choose a town first";
+  }
+  const query = searchInput?.value || "";
   const requestId = ++nearbySearchRequestId;
   if (!selectedTownPoint || !query.trim()) {
     renderNearbyPlaces([], query, false);
