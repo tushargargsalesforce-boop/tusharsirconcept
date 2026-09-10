@@ -236,7 +236,7 @@ function categories_for_search(string $term): array
         'cafe' => ['catering.cafe'],
         'coffee' => ['catering.cafe'],
         'tea' => ['catering.cafe'],
-        'bakery' => ['catering.bakery'],
+        'bakery' => ['commercial.food_and_drink'],
         'brunch' => ['catering.restaurant'],
         'restaurant' => ['catering.restaurant'],
         'food' => ['catering.restaurant', 'catering.fast_food'],
@@ -265,7 +265,7 @@ function categories_for_search(string $term): array
         'catering.cafe',
         'catering.restaurant',
         'catering.fast_food',
-        'catering.bakery',
+        'commercial.food_and_drink',
         'commercial.supermarket',
         'commercial.marketplace',
     ];
