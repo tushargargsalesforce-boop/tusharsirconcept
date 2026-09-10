@@ -1317,7 +1317,7 @@ document.getElementById("saveLocationBtn").addEventListener("click", async () =>
     });
     renderNearbyCafes();
     await sendHeartbeat();
-    document.getElementById("nearbySearchResults")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    showScreen("final");
   } catch (error) {
     setError("locationError", error.message);
   }
