@@ -6,8 +6,8 @@ load_env_file(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env');
 
 require_post();
 $data = read_json_body();
-$query = trim((string)($data['query'] ?? ''));
-$apiKey = trim((string)(getenv('GEOAPIFY_API_KEY') ?: ($_ENV['GEOAPIFY_API_KEY'] ?? '')));
+$query = trim((string) ($data['query'] ?? ''));
+$apiKey = trim((string) (getenv('GEOAPIFY_API_KEY') ?: ($_ENV['GEOAPIFY_API_KEY'] ?? '')));
 $latitude = filter_var($data['latitude'] ?? null, FILTER_VALIDATE_FLOAT);
 $longitude = filter_var($data['longitude'] ?? null, FILTER_VALIDATE_FLOAT);
 
@@ -29,8 +29,8 @@ if ($term === '') {
     json_response(['success' => false, 'message' => 'A valid search term is required'], 422);
 }
 
-$lat = number_format((float)$latitude, 6, '.', '');
-$lng = number_format((float)$longitude, 6, '.', '');
+$lat = number_format((float) $latitude, 6, '.', '');
+$lng = number_format((float) $longitude, 6, '.', '');
 $categories = categories_for_search($term);
 $params = [
     'categories' => implode(',', $categories),
@@ -53,18 +53,20 @@ $items = [];
 $seen = [];
 foreach (($decoded['features'] ?? []) as $feature) {
     $properties = $feature['properties'] ?? [];
-    $name = trim((string)($properties['name'] ?? $properties['address_line1'] ?? ''));
-    $placeLatitude = (float)($properties['lat'] ?? 0);
-    $placeLongitude = (float)($properties['lon'] ?? 0);
-    if ($name === '' || !$placeLatitude || !$placeLongitude) continue;
+    $name = trim((string) ($properties['name'] ?? $properties['address_line1'] ?? ''));
+    $placeLatitude = (float) ($properties['lat'] ?? 0);
+    $placeLongitude = (float) ($properties['lon'] ?? 0);
+    if ($name === '' || !$placeLatitude || !$placeLongitude)
+        continue;
 
     $key = strtolower($name . '|' . $placeLatitude . '|' . $placeLongitude);
-    if (isset($seen[$key])) continue;
+    if (isset($seen[$key]))
+        continue;
     $seen[$key] = true;
 
     $placeCategories = is_array($properties['categories'] ?? null)
         ? implode(' ', $properties['categories'])
-        : (string)($properties['categories'] ?? '');
+        : (string) ($properties['categories'] ?? '');
     $searchHaystack = strtolower(implode(' ', array_filter([
         $name,
         $placeCategories,
@@ -85,16 +87,18 @@ foreach (($decoded['features'] ?? []) as $feature) {
             break;
         }
     }
-    if (!$matchesSearch) continue;
+    if (!$matchesSearch)
+        continue;
     $category = place_category_label($placeCategories);
-    $distance = distance_km((float)$latitude, (float)$longitude, $placeLatitude, $placeLongitude);
-    if ($distance > 10) continue;
+    $distance = distance_km((float) $latitude, (float) $longitude, $placeLatitude, $placeLongitude);
+    if ($distance > 10)
+        continue;
 
     $items[] = [
         'name' => $name,
-        'placeId' => (string)($properties['place_id'] ?? $properties['datasource']['raw']['id'] ?? ''),
+        'placeId' => (string) ($properties['place_id'] ?? $properties['datasource']['raw']['id'] ?? ''),
         'description' => $category,
-        'detail' => trim((string)($properties['formatted'] ?? $properties['address_line2'] ?? $properties['city'] ?? 'Found on Geoapify map')),
+        'detail' => trim((string) ($properties['formatted'] ?? $properties['address_line2'] ?? $properties['city'] ?? 'Found on Geoapify map')),
         'distanceKm' => round($distance, 1),
         'lat' => $placeLatitude,
         'lng' => $placeLongitude,
@@ -200,7 +204,7 @@ function geoapify_request(array $params): string
         }
         curl_close($curl);
         if ($body !== false && $body !== '') {
-            return (string)$body;
+            return (string) $body;
         }
     }
 
@@ -213,5 +217,5 @@ function geoapify_request(array $params): string
         ],
     ]);
     $body = file_get_contents($url, false, $context);
-    return $body === false ? '' : (string)$body;
+    return $body === false ? '' : (string) $body;
 }
