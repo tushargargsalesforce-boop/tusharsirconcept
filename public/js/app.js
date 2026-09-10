@@ -517,15 +517,19 @@ async function renderNearbySearch() {
     }
   }
   if (searchInput) {
-    searchInput.disabled = !selectedTownPoint;
     searchInput.placeholder = selectedTownPoint
       ? "Try cafe, coffee, bakery, brunch..."
-      : "Choose a town first";
+      : "Try cafe, coffee, bakery, brunch...";
   }
   const query = searchInput?.value || "";
   const requestId = ++nearbySearchRequestId;
-  if (!selectedTownPoint || !query.trim()) {
+  if (!query.trim()) {
     renderNearbyPlaces([], query, false);
+    return;
+  }
+  if (!selectedTownPoint) {
+    const summary = document.getElementById("nearbySearchSummary");
+    if (summary) summary.textContent = "Select a town before searching nearby places.";
     return;
   }
 
